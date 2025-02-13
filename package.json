@@ -1,0 +1,32 @@
+{
+	"name": "@fhenixprotocol/cofhe-foundry-mocks",
+	"description": "Utility contracts for locally testing CoFHE with FHE primitives locally in foundry.",
+	"version": "0.0.1",
+	"author": {
+		"name": "FhenixProtocol",
+		"url": "https://github.com/FhenixProtocol/cofhe-foundry-mocks"
+	},
+	"license": "MIT",
+	"files": [
+		"FHE.sol",
+		"ICofhe.sol"
+	],
+	"keywords": [
+		"blockchain",
+		"ethereum",
+		"smart-contracts",
+		"solidity",
+		"FHE",
+		"encryption",
+		"privacy",
+		"coprocessor",
+		"fhenix",
+		"cofhe"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@openzeppelin/contracts": "^5.0.0"
+	}
+}

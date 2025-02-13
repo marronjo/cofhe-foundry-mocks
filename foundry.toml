@@ -1,7 +1,8 @@
 [profile.default]
 src = "src"
 out = "out"
-libs = ["dependencies"]
+libs = ["lib"]
 auto_detect_remappings = false
+
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

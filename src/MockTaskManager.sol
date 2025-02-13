@@ -687,11 +687,4 @@ contract TaskManager is MockCoFHE, ITaskManager {
     function simulateVerifyKey(uint256 ctHash, uint8, int32, uint8) external {
         acl.allowTransient(ctHash, msg.sender);
     }
-
-    function isAllowedWithPermission(
-        Permission memory permission,
-        uint256 handle
-    ) public view returns (bool) {
-        return acl.isAllowedWithPermission(permission, handle);
-    }
 }
