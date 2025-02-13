@@ -32,7 +32,7 @@ Import `CoFheTest` from `@fhenix-protocol/cofhe-foundry-mocks/CoFheTest.sol` and
 import {Test} from "forge-std/Test.sol";
 import { CoFheTest } from "@fhenixprotocol/cofhe-foundry-mocks/CoFheTest.sol";
 
-contract FHERC20Test is Test {
+contract ExampleFHECounterTest is Test {
     CoFheTest CFT;
 
     ...
