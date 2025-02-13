@@ -34,7 +34,6 @@ import { CoFheTest } from "@fhenixprotocol/cofhe-foundry-mocks/CoFheTest.sol";
 
 contract ExampleFHECounterTest is Test {
     CoFheTest CFT;
-
     ...
 
     function setUp() public {
@@ -45,9 +44,8 @@ contract ExampleFHECounterTest is Test {
 
 Creating a new `CoFheTest` contract initializes a mock CoFHE `TaskManager` which stores encrypted values locally as cleartext. This mock TM contract is etched to the address found in `FHE.sol`, and will handle all `FHE.___` calls.
 
-:::
-`FHE.sealoutput` and `FHE.decrypt` return the result asynchronously to contracts implementing `IAsyncFHEReceiver`. Due to the nature of foundry tests, these async callbacks are called synchronously.
-:::
+> [!NOTE]  
+> Outside of a test environment `FHE.sealoutput` and `FHE.decrypt` will resolve asynchronously. See `IAsyncFHEReceiver`. Due to the nature of foundry tests, these async callbacks are called synchronously.
 
 Additionally, you now have access to `CFT` which has the following functions (the following examples and more can be found in `ExampleFHECounter.t.sol`)
 
