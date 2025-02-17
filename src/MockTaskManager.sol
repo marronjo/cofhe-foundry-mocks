@@ -244,6 +244,9 @@ contract TaskManager is ITaskManager, MockCoFHE {
     mapping(uint256 ctHash => uint256) private _decryptResult;
     mapping(uint256 ctHash => bool) private _decryptResultReady;
 
+    // NOTE: MOCK
+    mapping(uint256 ctHash => uint64) private _decryptResultReadyTimestamp;
+
     // Errors
     // Returned when the handle is not allowed in the ACL for the account.
     error ACLNotAllowed(uint256 handle, address account);
@@ -261,12 +264,6 @@ contract TaskManager is ITaskManager, MockCoFHE {
     );
     event DecryptRequest(
         uint256 ctHash,
-        address callbackAddress,
-        address requestor
-    );
-    event SealOutputRequest(
-        uint256 ctHash,
-        bytes32 publicKey,
         address callbackAddress,
         address requestor
     );
@@ -357,24 +354,23 @@ contract TaskManager is ITaskManager, MockCoFHE {
         emit DecryptRequest(ctHash, msg.sender, requestor);
 
         // NOTE: MOCK
-        MOCK_decryptOperation(ctHash, requestor, msg.sender);
+        _decryptResultReady[ctHash] = false;
+        _decryptResult[ctHash] = _get(ctHash);
+
+        uint64 asyncOffset = uint64((block.timestamp % 10) + 1);
+        _decryptResultReadyTimestamp[ctHash] =
+            uint64(block.timestamp) +
+            asyncOffset;
     }
 
     function getDecryptResult(uint256 ctHash) public view returns (uint256) {
         if (!_decryptResultReady[ctHash]) revert DecryptResultNotReady(ctHash);
-        return _decryptResult[ctHash];
-    }
-
-    function createSealOutputTask(
-        uint256 ctHash,
-        bytes32 publicKey,
-        address requestor
-    ) public {
-        checkAllowed(ctHash);
-        emit SealOutputRequest(ctHash, publicKey, msg.sender, requestor);
 
         // NOTE: MOCK
-        MOCK_sealoutputOperation(ctHash, publicKey, requestor, msg.sender);
+        if (block.timestamp < _decryptResultReadyTimestamp[ctHash])
+            revert DecryptResultNotReady(ctHash);
+
+        return _get(ctHash);
     }
 
     function checkAllowed(uint256 ctHash) internal view {
@@ -553,26 +549,9 @@ contract TaskManager is ITaskManager, MockCoFHE {
     ) external onlyAggregator {
         // This call can be very expensive
         // TODO : Consider using allowance for gas fees and ask the user to pay for it
-        IAsyncFHEReceiver(callbackContract).handleDecryptResult(
-            ctHash,
-            result,
-            requestor
-        );
-    }
-
-    function handleSealOutputResult(
-        uint256 ctHash,
-        string memory result,
-        address callbackContract,
-        address requestor
-    ) external onlyAggregator {
-        // This call can be very expensive
-        // TODO : Consider using allowance for gas fees and ask the user to pay for it
-        IAsyncFHEReceiver(callbackContract).handleSealOutputResult(
-            ctHash,
-            result,
-            requestor
-        );
+        _decryptResultReady[ctHash] = true;
+        _decryptResult[ctHash] = result;
+        _decryptResultReadyTimestamp[ctHash] = uint64(block.timestamp);
     }
 
     function handleError(

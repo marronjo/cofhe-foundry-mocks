@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity >=0.8.25 <0.9.0;
 
-import {Utils, FunctionId, IAsyncFHEReceiver} from "./ICofhe.sol";
+import {Utils, FunctionId} from "./ICofhe.sol";
 import {TMCommon} from "./MockTaskManager.sol";
 import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -503,18 +503,6 @@ abstract contract MockCoFHE {
         revert InvalidThreeInputOperation(operation);
     }
 
-    function MOCK_decryptOperation(
-        uint256 ctHash,
-        address requestor,
-        address sender
-    ) internal {
-        IAsyncFHEReceiver(sender).handleDecryptResult(
-            ctHash,
-            _get(ctHash),
-            requestor
-        );
-    }
-
     // Keccak256-based XOR shift.
     function MOCK_xorSeal(
         uint256 ctHash,
@@ -539,19 +527,5 @@ abstract contract MockCoFHE {
         }
 
         return string(str);
-    }
-
-    function MOCK_sealoutputOperation(
-        uint256 ctHash,
-        bytes32 publicKey,
-        address requestor,
-        address sender
-    ) internal {
-        string memory sealedOutput = MOCK_xorSeal(ctHash, publicKey);
-        IAsyncFHEReceiver(sender).handleSealOutputResult(
-            ctHash,
-            sealedOutput,
-            requestor
-        );
     }
 }

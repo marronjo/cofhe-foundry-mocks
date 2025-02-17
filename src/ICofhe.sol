@@ -46,11 +46,6 @@ interface ITaskManager {
 
     function createDecryptTask(uint256 ctHash, address requestor) external;
     function getDecryptResult(uint256 input) external returns (uint256);
-    function createSealOutputTask(
-        uint256 ctHash,
-        bytes32 publicKey,
-        address requestor
-    ) external;
     function verifyKey(
         uint256 ctHash,
         uint8 uintType,
@@ -62,19 +57,6 @@ interface ITaskManager {
     function allow(uint256 ctHash, address account) external;
     function isAllowed(uint256 ctHash, address account) external returns (bool);
     function allowTransient(uint256 ctHash, address account) external;
-}
-
-interface IAsyncFHEReceiver {
-    function handleDecryptResult(
-        uint256 ctHash,
-        uint256 result,
-        address requestor
-    ) external;
-    function handleSealOutputResult(
-        uint256 ctHash,
-        string memory result,
-        address requestor
-    ) external;
 }
 
 library Utils {

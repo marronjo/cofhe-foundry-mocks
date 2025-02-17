@@ -71,10 +71,6 @@ struct inEaddress {
     string signature;
 }
 
-struct SealedArray {
-    bytes[] data;
-}
-
 // ================================
 // \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
 // TODO : CHANGE ME AFTER DEPLOYING
@@ -427,18 +423,6 @@ library Impl {
                 Common.createUint256Inputs(lhs, rhs),
                 new uint256[](0)
             );
-    }
-
-    function sealOutput(
-        uint256 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        ITaskManager(TASK_MANAGER_ADDRESS).createSealOutputTask(
-            value,
-            publicKey,
-            msg.sender
-        );
-        return Common.bytesToHexString(abi.encodePacked(bytes32(value)));
     }
 
     function decrypt(uint256 input) internal returns (uint256) {
@@ -3559,119 +3543,6 @@ library FHE {
                 )
             );
     }
-
-    /// @notice performs the sealoutput async function on a ebool ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        ebool value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEbool(false);
-        }
-
-        return Impl.sealOutput(ebool.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint8 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint8 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint8(0);
-        }
-
-        return Impl.sealOutput(euint8.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint16 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint16 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint16(0);
-        }
-
-        return Impl.sealOutput(euint16.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint32 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint32 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint32(0);
-        }
-
-        return Impl.sealOutput(euint32.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint64 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint64 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint64(0);
-        }
-
-        return Impl.sealOutput(euint64.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint128 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint128 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint128(0);
-        }
-
-        return Impl.sealOutput(euint128.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a euint256 ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        euint256 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEuint256(0);
-        }
-
-        return Impl.sealOutput(euint256.unwrap(value), publicKey);
-    }
-    /// @notice performs the sealoutput async function on a eaddress ciphertext. This operation returns the plaintext value, sealed for the public key provided
-    /// @param value Ciphertext to decrypt and seal
-    /// @param publicKey Public Key that will receive the sealed plaintext
-    /// @return Plaintext input, sealed for the owner of `publicKey`
-    function sealoutput(
-        eaddress value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        if (!Common.isInitialized(value)) {
-            value = asEaddress(address(0));
-        }
-
-        return Impl.sealOutput(eaddress.unwrap(value), publicKey);
-    }
     /// @notice Performs the async decrypt operation on a ciphertext
     /// @dev The decrypted output should be asynchronously handled by the IAsyncFHEReceiver implementation
     /// @param input1 the input ciphertext
@@ -3759,6 +3630,64 @@ library FHE {
         }
 
         return eaddress.wrap(Impl.decrypt(eaddress.unwrap(input1)));
+    }
+
+    function getDecryptResult(ebool input1) internal returns (bool) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEbool(false);
+        }
+
+        uint256 result = Impl.getDecryptResult(ebool.unwrap(input1));
+        return result == 1;
+    }
+    function getDecryptResult(euint8 input1) internal returns (uint8) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint8(0);
+        }
+
+        return uint8(Impl.getDecryptResult(euint8.unwrap(input1)));
+    }
+    function getDecryptResult(euint16 input1) internal returns (uint16) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint16(0);
+        }
+
+        return uint16(Impl.getDecryptResult(euint16.unwrap(input1)));
+    }
+    function getDecryptResult(euint32 input1) internal returns (uint32) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint32(0);
+        }
+
+        return uint32(Impl.getDecryptResult(euint32.unwrap(input1)));
+    }
+    function getDecryptResult(euint64 input1) internal returns (uint64) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint64(0);
+        }
+
+        return uint64(Impl.getDecryptResult(euint64.unwrap(input1)));
+    }
+    function getDecryptResult(euint128 input1) internal returns (uint128) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint128(0);
+        }
+
+        return uint128(Impl.getDecryptResult(euint128.unwrap(input1)));
+    }
+    function getDecryptResult(euint256 input1) internal returns (uint256) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEuint256(0);
+        }
+
+        return uint256(Impl.getDecryptResult(euint256.unwrap(input1)));
+    }
+    function getDecryptResult(eaddress input1) internal returns (address) {
+        if (!Common.isInitialized(input1)) {
+            input1 = asEaddress(address(0));
+        }
+
+        return address(uint160(Impl.getDecryptResult(eaddress.unwrap(input1))));
     }
 
     function select(
@@ -5069,14 +4998,11 @@ library BindingsEbool {
     function toU256(ebool value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        ebool value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(ebool value) internal returns (ebool) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(ebool value) internal returns (bool) {
+        return FHE.getDecryptResult(value);
     }
     function allow(ebool ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -5310,14 +5236,11 @@ library BindingsEuint8 {
     function toU256(euint8 value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        euint8 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint8 value) internal returns (euint8) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint8 value) internal returns (uint8) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint8 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -5551,14 +5474,11 @@ library BindingsEuint16 {
     function toU256(euint16 value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        euint16 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint16 value) internal returns (euint16) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint16 value) internal returns (uint16) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint16 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -5795,14 +5715,11 @@ library BindingsEuint32 {
     function toU256(euint32 value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        euint32 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint32 value) internal returns (euint32) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint32 value) internal returns (uint32) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint32 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -6021,14 +5938,11 @@ library BindingsEuint64 {
     function toU256(euint64 value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        euint64 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint64 value) internal returns (euint64) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint64 value) internal returns (uint64) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint64 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -6230,14 +6144,11 @@ library BindingsEuint128 {
     function toU256(euint128 value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        euint128 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint128 value) internal returns (euint128) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint128 value) internal returns (uint128) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint128 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -6299,14 +6210,11 @@ library BindingsEuint256 {
     function toEaddress(euint256 value) internal returns (eaddress) {
         return FHE.asEaddress(value);
     }
-    function seal(
-        euint256 value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(euint256 value) internal returns (euint256) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(euint256 value) internal returns (uint256) {
+        return FHE.getDecryptResult(value);
     }
     function allow(euint256 ctHash, address account) internal {
         FHE.allow(ctHash, account);
@@ -6368,14 +6276,11 @@ library BindingsEaddress {
     function toU256(eaddress value) internal returns (euint256) {
         return FHE.asEuint256(value);
     }
-    function seal(
-        eaddress value,
-        bytes32 publicKey
-    ) internal returns (string memory) {
-        return FHE.sealoutput(value, publicKey);
-    }
     function decrypt(eaddress value) internal returns (eaddress) {
         return FHE.decrypt(value);
+    }
+    function getDecryptResult(eaddress value) internal returns (address) {
+        return FHE.getDecryptResult(value);
     }
     function allow(eaddress ctHash, address account) internal {
         FHE.allow(ctHash, account);

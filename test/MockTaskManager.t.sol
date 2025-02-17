@@ -5,10 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
 import "../src/FHE.sol";
 
-contract SimpleDecrypter is IAsyncFHEReceiver {
-    mapping(uint256 ctHash => uint256) public decryptedRes;
-    mapping(uint256 ctHash => string) public sealedRes;
-
+contract SimpleDecrypter {
     function decrypt(inEuint8 memory inEuint8Value) public {
         euint8 euint8Value = FHE.asEuint8(inEuint8Value);
         FHE.decrypt(euint8Value);
@@ -26,20 +23,8 @@ contract SimpleDecrypter is IAsyncFHEReceiver {
         FHE.sealoutput(euint8Value, publicKey);
     }
 
-    function handleDecryptResult(
-        uint256 ctHash,
-        uint256 result,
-        address
-    ) external override {
-        decryptedRes[ctHash] = result;
-    }
-
-    function handleSealOutputResult(
-        uint256 ctHash,
-        string memory result,
-        address
-    ) external override {
-        sealedRes[ctHash] = result;
+    function getDecryptedResult(uint256 ctHash) public view returns (uint256) {
+        return FHE.getDecryptResult[ctHash];
     }
 }
 

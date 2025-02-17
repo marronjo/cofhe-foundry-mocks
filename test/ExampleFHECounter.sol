@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {FHE, euint32, inEuint32, IAsyncFHEReceiver} from "../src/FHE.sol";
+import {FHE, euint32, inEuint32} from "../src/FHE.sol";
 
-contract ExampleFHECounter is IAsyncFHEReceiver {
+contract ExampleFHECounter {
     euint32 public eNumber;
-    mapping(uint256 ctHash => uint256) public decryptedRes;
-    mapping(uint256 ctHash => string) public sealedRes;
 
     function setNumber(inEuint32 memory inNumber) public {
         eNumber = FHE.asEuint32(inNumber);
@@ -43,23 +41,7 @@ contract ExampleFHECounter is IAsyncFHEReceiver {
         FHE.decrypt(eNumber);
     }
 
-    function sealoutput(bytes32 publicKey) public {
-        FHE.sealoutput(eNumber, publicKey);
-    }
-
-    function handleDecryptResult(
-        uint256 ctHash,
-        uint256 result,
-        address
-    ) external override {
-        decryptedRes[ctHash] = result;
-    }
-
-    function handleSealOutputResult(
-        uint256 ctHash,
-        string memory result,
-        address
-    ) external override {
-        sealedRes[ctHash] = result;
+    function getDecryptedResult() public view returns (uint256) {
+        return FHE.getDecryptResult(eNumber);
     }
 }
