@@ -92,48 +92,6 @@ contract CoFheTest is Test {
 
     // UTILS
 
-    // Unseal a sealed value returned by FHE.sealoutput
-    // In the mocked task manager, the sealed value is an xored value of the original value and a mask derived from the public key
-    function unseal(
-        string memory sealedData,
-        bytes32 publicKey
-    ) external pure returns (uint256 result) {
-        bytes32 mask = keccak256(abi.encodePacked(publicKey));
-        bytes32 xored = hexStringToBytes32(sealedData) ^ mask;
-        return uint256(xored);
-    }
-
-    function hexStringToBytes32(
-        string memory hexString
-    ) public pure returns (bytes32) {
-        require(
-            bytes(hexString).length == 66 &&
-                bytes(hexString)[0] == "0" &&
-                bytes(hexString)[1] == "x",
-            "Invalid hex string"
-        );
-
-        bytes32 result;
-        for (uint256 i = 2; i < 66; i++) {
-            result =
-                (result << 4) |
-                bytes32(uint256(fromHexChar(uint8(bytes(hexString)[i]))));
-        }
-        return result;
-    }
-
-    function fromHexChar(uint8 c) internal pure returns (uint8) {
-        if (c >= 48 && c <= 57) {
-            return c - 48; // '0' - '9'
-        } else if (c >= 97 && c <= 102) {
-            return c - 87; // 'a' - 'f'
-        } else if (c >= 65 && c <= 70) {
-            return c - 55; // 'A' - 'F'
-        } else {
-            revert("Invalid hex char");
-        }
-    }
-
     /**
      * @notice              Creates an encrypted value of a given type. The hash returned is a pointer to the value in the mocked CoFHE.
      * @param utype         Type of the encrypted value.

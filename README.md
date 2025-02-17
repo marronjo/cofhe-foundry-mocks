@@ -74,25 +74,6 @@ function test_setNumber() public {
 }
 ```
 
-### `CFT.unseal` utility
-
-Instead of doing a true asymmetric encryption, the mock `TaskManager` uses a simple XOR to seal an output. The `CFT.unseal` function uses the publicKey used to seal a value, and returns the unsealed result.
-
-```solidity
-function test_sealoutput() public {
-    bytes32 publicKey = bytes32("0xFakePublicKey");
-
-    counter.sealoutput(publicKey);
-
-    uint256 unsealed = CFT.unseal(
-        counter.sealedRes(euint32.unwrap(counter.eNumber())),
-        publicKey
-    );
-
-    assertEq(unsealed, 5);
-}
-```
-
 ## License
 
 This project is licensed under MIT.
