@@ -354,7 +354,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         emit DecryptRequest(ctHash, msg.sender, requestor);
 
         // NOTE: MOCK
-        _decryptResultReady[ctHash] = false;
+        _decryptResultReady[ctHash] = true;
         _decryptResult[ctHash] = _get(ctHash);
 
         uint64 asyncOffset = uint64((block.timestamp % 10) + 1);

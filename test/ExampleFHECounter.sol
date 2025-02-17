@@ -41,7 +41,7 @@ contract ExampleFHECounter {
         FHE.decrypt(eNumber);
     }
 
-    function getDecryptedResult() public view returns (uint256) {
-        return FHE.getDecryptResult(eNumber);
+    function getDecryptResult(euint32 input1) public view returns (uint32) {
+        return FHE.getDecryptResult(input1);
     }
 }

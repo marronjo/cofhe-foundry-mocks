@@ -430,7 +430,7 @@ library Impl {
         return input;
     }
 
-    function getDecryptResult(uint256 input) internal returns (uint256) {
+    function getDecryptResult(uint256 input) internal view returns (uint256) {
         return ITaskManager(TASK_MANAGER_ADDRESS).getDecryptResult(input);
     }
 
@@ -3632,62 +3632,33 @@ library FHE {
         return eaddress.wrap(Impl.decrypt(eaddress.unwrap(input1)));
     }
 
-    function getDecryptResult(ebool input1) internal returns (bool) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEbool(false);
-        }
-
+    function getDecryptResult(ebool input1) internal view returns (bool) {
         uint256 result = Impl.getDecryptResult(ebool.unwrap(input1));
         return result == 1;
     }
-    function getDecryptResult(euint8 input1) internal returns (uint8) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint8(0);
-        }
-
+    function getDecryptResult(euint8 input1) internal view returns (uint8) {
         return uint8(Impl.getDecryptResult(euint8.unwrap(input1)));
     }
-    function getDecryptResult(euint16 input1) internal returns (uint16) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint16(0);
-        }
-
+    function getDecryptResult(euint16 input1) internal view returns (uint16) {
         return uint16(Impl.getDecryptResult(euint16.unwrap(input1)));
     }
-    function getDecryptResult(euint32 input1) internal returns (uint32) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint32(0);
-        }
-
+    function getDecryptResult(euint32 input1) internal view returns (uint32) {
         return uint32(Impl.getDecryptResult(euint32.unwrap(input1)));
     }
-    function getDecryptResult(euint64 input1) internal returns (uint64) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint64(0);
-        }
-
+    function getDecryptResult(euint64 input1) internal view returns (uint64) {
         return uint64(Impl.getDecryptResult(euint64.unwrap(input1)));
     }
-    function getDecryptResult(euint128 input1) internal returns (uint128) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint128(0);
-        }
-
+    function getDecryptResult(euint128 input1) internal view returns (uint128) {
         return uint128(Impl.getDecryptResult(euint128.unwrap(input1)));
     }
-    function getDecryptResult(euint256 input1) internal returns (uint256) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEuint256(0);
-        }
-
+    function getDecryptResult(euint256 input1) internal view returns (uint256) {
         return uint256(Impl.getDecryptResult(euint256.unwrap(input1)));
     }
-    function getDecryptResult(eaddress input1) internal returns (address) {
-        if (!Common.isInitialized(input1)) {
-            input1 = asEaddress(address(0));
-        }
-
+    function getDecryptResult(eaddress input1) internal view returns (address) {
         return address(uint160(Impl.getDecryptResult(eaddress.unwrap(input1))));
+    }
+    function getDecryptResult(uint256 input1) internal view returns (uint256) {
+        return Impl.getDecryptResult(input1);
     }
 
     function select(
@@ -5001,7 +4972,7 @@ library BindingsEbool {
     function decrypt(ebool value) internal returns (ebool) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(ebool value) internal returns (bool) {
+    function getDecryptResult(ebool value) internal view returns (bool) {
         return FHE.getDecryptResult(value);
     }
     function allow(ebool ctHash, address account) internal {
@@ -5239,7 +5210,7 @@ library BindingsEuint8 {
     function decrypt(euint8 value) internal returns (euint8) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint8 value) internal returns (uint8) {
+    function getDecryptResult(euint8 value) internal view returns (uint8) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint8 ctHash, address account) internal {
@@ -5477,7 +5448,7 @@ library BindingsEuint16 {
     function decrypt(euint16 value) internal returns (euint16) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint16 value) internal returns (uint16) {
+    function getDecryptResult(euint16 value) internal view returns (uint16) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint16 ctHash, address account) internal {
@@ -5718,7 +5689,7 @@ library BindingsEuint32 {
     function decrypt(euint32 value) internal returns (euint32) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint32 value) internal returns (uint32) {
+    function getDecryptResult(euint32 value) internal view returns (uint32) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint32 ctHash, address account) internal {
@@ -5941,7 +5912,7 @@ library BindingsEuint64 {
     function decrypt(euint64 value) internal returns (euint64) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint64 value) internal returns (uint64) {
+    function getDecryptResult(euint64 value) internal view returns (uint64) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint64 ctHash, address account) internal {
@@ -6147,7 +6118,7 @@ library BindingsEuint128 {
     function decrypt(euint128 value) internal returns (euint128) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint128 value) internal returns (uint128) {
+    function getDecryptResult(euint128 value) internal view returns (uint128) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint128 ctHash, address account) internal {
@@ -6213,7 +6184,7 @@ library BindingsEuint256 {
     function decrypt(euint256 value) internal returns (euint256) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(euint256 value) internal returns (uint256) {
+    function getDecryptResult(euint256 value) internal view returns (uint256) {
         return FHE.getDecryptResult(value);
     }
     function allow(euint256 ctHash, address account) internal {
@@ -6279,7 +6250,7 @@ library BindingsEaddress {
     function decrypt(eaddress value) internal returns (eaddress) {
         return FHE.decrypt(value);
     }
-    function getDecryptResult(eaddress value) internal returns (address) {
+    function getDecryptResult(eaddress value) internal view returns (address) {
         return FHE.getDecryptResult(value);
     }
     function allow(eaddress ctHash, address account) internal {

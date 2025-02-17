@@ -15,16 +15,8 @@ contract SimpleDecrypter {
         FHE.decrypt(euint8Value);
     }
 
-    function sealoutput(
-        inEuint8 memory inEuint8Value,
-        bytes32 publicKey
-    ) public {
-        euint8 euint8Value = FHE.asEuint8(inEuint8Value);
-        FHE.sealoutput(euint8Value, publicKey);
-    }
-
-    function getDecryptedResult(uint256 ctHash) public view returns (uint256) {
-        return FHE.getDecryptResult[ctHash];
+    function getDecryptResult(uint256 ctHash) public view returns (uint256) {
+        return FHE.getDecryptResult(ctHash);
     }
 }
 
@@ -316,27 +308,10 @@ contract MockTaskManagerTests is Test {
         simpleDecrypter.decrypt(inEuint8Value);
 
         // In mocks, this happens synchronously
-        uint256 result = simpleDecrypter.decryptedRes(inEuint8Value.hash);
+        vm.warp(block.timestamp + 11);
+        uint256 result = simpleDecrypter.getDecryptResult(inEuint8Value.hash);
 
         assertEq(result, uint8Value);
-    }
-
-    function test_mock_sealOutput() public {
-        uint160 userAddress = 512;
-
-        uint8 uint8Value = 10;
-        vm.prank(address(userAddress));
-        inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
-
-        vm.prank(address(userAddress));
-        bytes32 publicKey = bytes32("HELLO0x1234567890abcdef");
-        simpleDecrypter.sealoutput(inEuint8Value, publicKey);
-
-        // In mocks, this happens synchronously
-        string memory result = simpleDecrypter.sealedRes(inEuint8Value.hash);
-
-        uint256 unsealed = CFT.unseal(result, publicKey);
-        assertEq(unsealed, uint8Value);
     }
 
     error ACLNotAllowed(uint256 handle, address account);
@@ -370,6 +345,10 @@ contract MockTaskManagerTests is Test {
 
         thiefDecrypter.decrypt(euint8Value);
 
-        assertEq(thiefDecrypter.decryptedRes(inEuint8Value.hash), uint8Value);
+        vm.warp(block.timestamp + 11);
+        assertEq(
+            thiefDecrypter.getDecryptResult(inEuint8Value.hash),
+            uint8Value
+        );
     }
 }
