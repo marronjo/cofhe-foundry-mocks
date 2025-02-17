@@ -240,7 +240,7 @@ library TMCommon {
     }
 }
 
-contract TaskManager is MockCoFHE, ITaskManager {
+contract TaskManager is ITaskManager, MockCoFHE {
     // Errors
     // Returned when the handle is not allowed in the ACL for the account.
     error ACLNotAllowed(uint256 handle, address account);
