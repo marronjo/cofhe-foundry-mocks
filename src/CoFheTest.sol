@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {ACL} from "./ACL.sol";
-import "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import "./FHE.sol";
 
 contract CoFheTest is Test {
     TaskManager public taskManager;

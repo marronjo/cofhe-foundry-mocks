@@ -3,7 +3,7 @@
 pragma solidity >=0.8.25 <0.9.0;
 import "./ACL.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
+import "./ICofhe.sol";
 import {MockCoFHE} from "./MockCoFHE.sol";
 
 // Define an enum to represent the status of a key
@@ -241,9 +241,15 @@ library TMCommon {
 }
 
 contract TaskManager is ITaskManager, MockCoFHE {
+    mapping(uint256 ctHash => uint256) private _decryptResult;
+    mapping(uint256 ctHash => bool) private _decryptResultReady;
+
     // Errors
     // Returned when the handle is not allowed in the ACL for the account.
     error ACLNotAllowed(uint256 handle, address account);
+
+    // Returned when the decrypt result is not ready
+    error DecryptResultNotReady(uint256 ctHash);
 
     // Events
     event TaskCreated(
@@ -352,6 +358,11 @@ contract TaskManager is ITaskManager, MockCoFHE {
 
         // NOTE: MOCK
         MOCK_decryptOperation(ctHash, requestor, msg.sender);
+    }
+
+    function getDecryptResult(uint256 ctHash) public view returns (uint256) {
+        if (!_decryptResultReady[ctHash]) revert DecryptResultNotReady(ctHash);
+        return _decryptResult[ctHash];
     }
 
     function createSealOutputTask(

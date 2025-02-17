@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity >=0.8.25 <0.9.0;
 
-import "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
+import {Utils, FunctionId, IAsyncFHEReceiver} from "./ICofhe.sol";
 import {TMCommon} from "./MockTaskManager.sol";
 import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./FHE.sol";
 
 /**
  * @dev Mock implementation of the CoFHE contract, used to test FHE ops in isolation.

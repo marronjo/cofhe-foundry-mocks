@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
-import "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import "../src/FHE.sol";
 
 contract SimpleDecrypter is IAsyncFHEReceiver {
     mapping(uint256 ctHash => uint256) public decryptedRes;
