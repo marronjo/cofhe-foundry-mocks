@@ -25,6 +25,7 @@ contract CoFheTest is Test {
             TASK_MANAGER_ADDRESS
         );
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
+        vm.label(address(taskManager), "TaskManager(Mock)");
 
         acl = new ACL();
         vm.label(address(acl), "ACL");
