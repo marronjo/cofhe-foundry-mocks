@@ -33,6 +33,26 @@ contract CoFheTest is Test {
         taskManager.setACLContract(address(acl));
     }
 
+    // EXPOSED FUNCTIONS
+
+    /**
+     * @notice              Returns the value of a given encrypted value from the mocked task manager.
+     * @param ctHash        Hash of the encrypted value.
+     * @return              Value of the encrypted value.
+     */
+    function mockStorage(uint256 ctHash) public view returns (uint256) {
+        return taskManager.mockStorage(ctHash);
+    }
+
+    /**
+     * @notice              Returns whether a given encrypted value is in the mocked task manager.
+     * @param ctHash        Hash of the encrypted value.
+     * @return              Whether the encrypted value is in the mocked task manager.
+     */
+    function inMockStorage(uint256 ctHash) public view returns (bool) {
+        return taskManager.inMockStorage(ctHash);
+    }
+
     // ASSERTIONS
 
     // Hash
