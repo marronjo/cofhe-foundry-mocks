@@ -9,10 +9,12 @@ import "./FHE.sol";
 contract CoFheTest is Test {
     TaskManager public taskManager;
     ACL public acl;
+    bool private _log;
 
     address public constant TM_ADMIN = address(128);
 
-    constructor() {
+    constructor(bool log) {
+        _log = log;
         etchFhenixMocks();
     }
 
@@ -32,6 +34,9 @@ contract CoFheTest is Test {
 
         vm.prank(TM_ADMIN);
         taskManager.setACLContract(address(acl));
+
+        // Set log setting
+        taskManager.setLogOps(_log);
     }
 
     // EXPOSED FUNCTIONS

@@ -33,6 +33,12 @@ abstract contract MockCoFHE {
     error InvalidTwoInputOperation(string operation);
     error InvalidThreeInputOperation(string operation);
 
+    // OPTIONS
+
+    function setLogOps(bool _logOps) public {
+        logOps = _logOps;
+    }
+
     // Utils
 
     function strEq(

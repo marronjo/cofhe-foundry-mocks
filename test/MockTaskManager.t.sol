@@ -26,7 +26,7 @@ contract MockTaskManagerTests is Test {
     SimpleDecrypter thiefDecrypter;
 
     function setUp() public {
-        CFT = new CoFheTest();
+        CFT = new CoFheTest(false);
 
         simpleDecrypter = new SimpleDecrypter();
         thiefDecrypter = new SimpleDecrypter();

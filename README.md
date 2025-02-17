@@ -37,12 +37,12 @@ contract ExampleFHECounterTest is Test {
     ...
 
     function setUp() public {
-        CFT = new CoFheTest();
+        CFT = new CoFheTest(false);
         ...
 }
 ```
 
-Creating a new `CoFheTest` contract initializes a mock CoFHE `TaskManager` which stores encrypted values locally as cleartext. This mock TM contract is etched to the address found in `FHE.sol`, and will handle all `FHE.___` calls.
+Creating a new `CoFheTest` contract initializes a mock CoFHE `TaskManager` which stores encrypted values locally as cleartext. This mock TM contract is etched to the address found in `FHE.sol`, and will handle all `FHE.___` calls. The boolean param is `log` which sets whether the mocked ops should be logged to the console.
 
 > [!NOTE]  
 > Outside of a test environment `FHE.sealoutput` and `FHE.decrypt` will resolve asynchronously. See `IAsyncFHEReceiver`. Due to the nature of foundry tests, these async callbacks are called synchronously.

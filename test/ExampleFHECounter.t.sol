@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {ExampleFHECounter} from "./ExampleFHECounter.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
 import {FHE, euint32, inEuint32} from "../src/FHE.sol";
@@ -12,7 +12,7 @@ contract ExampleFHECounterTest is Test {
     ExampleFHECounter public counter;
 
     function setUp() public {
-        CFT = new CoFheTest();
+        CFT = new CoFheTest(false);
 
         counter = new ExampleFHECounter();
 
@@ -60,14 +60,8 @@ contract ExampleFHECounterTest is Test {
             try counter.getDecryptResult(counter.eNumber()) returns (
                 uint32 result
             ) {
-                console.log("Decrypted result:", result);
                 success = true;
             } catch {
-                console.log(
-                    "Decryption failed, retrying...",
-                    count,
-                    block.timestamp
-                );
                 vm.warp(block.timestamp + 1);
                 count += 1;
             }
