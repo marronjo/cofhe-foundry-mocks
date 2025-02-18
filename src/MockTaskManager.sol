@@ -364,13 +364,21 @@ contract TaskManager is ITaskManager, MockCoFHE {
     }
 
     function getDecryptResult(uint256 ctHash) public view returns (uint256) {
-        if (!_decryptResultReady[ctHash]) revert DecryptResultNotReady(ctHash);
+        (uint256 result, bool decrypted) = getDecryptResultSafe(ctHash);
+        if (!decrypted) revert DecryptResultNotReady(ctHash);
+        return result;
+    }
+
+    function getDecryptResultSafe(
+        uint256 ctHash
+    ) public view returns (uint256 result, bool decrypted) {
+        if (!_decryptResultReady[ctHash]) return (0, false);
 
         // NOTE: MOCK
         if (block.timestamp < _decryptResultReadyTimestamp[ctHash])
-            revert DecryptResultNotReady(ctHash);
+            return (0, false);
 
-        return _get(ctHash);
+        return (_get(ctHash), true);
     }
 
     function checkAllowed(uint256 ctHash) internal view {
@@ -544,8 +552,8 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function handleDecryptResult(
         uint256 ctHash,
         uint256 result,
-        address callbackContract,
-        address requestor
+        address,
+        address
     ) external onlyAggregator {
         // This call can be very expensive
         // TODO : Consider using allowance for gas fees and ask the user to pay for it

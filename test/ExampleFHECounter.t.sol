@@ -57,16 +57,32 @@ contract ExampleFHECounterTest is Test {
         uint8 count = 0;
         bool success = false;
         while (!success && count < 100) {
-            try counter.getDecryptResult(counter.eNumber()) returns (
-                uint32 result
-            ) {
+            try counter.getDecryptResult(counter.eNumber()) returns (uint32) {
                 success = true;
             } catch {
                 vm.warp(block.timestamp + 1);
                 count += 1;
             }
         }
+    }
 
-        // assertEq(counter.decryptedRes(euint32.unwrap(counter.eNumber())), 5);
+    function test_decryptSafe() public {
+        CFT.assertStoredValue(counter.eNumber(), 5);
+        counter.decrypt();
+
+        uint8 count = 0;
+        bool success = false;
+        while (!success && count < 100) {
+            (uint256 result, bool decrypted) = counter.getDecryptResultSafe(
+                counter.eNumber()
+            );
+            if (decrypted) {
+                assertEq(result, 5);
+                success = true;
+            } else {
+                vm.warp(block.timestamp + 1);
+                count += 1;
+            }
+        }
     }
 }
