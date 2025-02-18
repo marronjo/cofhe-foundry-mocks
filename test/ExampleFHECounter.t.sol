@@ -57,9 +57,7 @@ contract ExampleFHECounterTest is Test {
         uint8 count = 0;
         bool success = false;
         while (!success && count < 100) {
-            try counter.getDecryptResult(counter.eNumber()) returns (
-                uint32 result
-            ) {
+            try counter.getDecryptResult(counter.eNumber()) returns (uint32) {
                 success = true;
             } catch {
                 vm.warp(block.timestamp + 1);

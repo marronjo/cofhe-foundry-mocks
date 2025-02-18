@@ -552,8 +552,8 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function handleDecryptResult(
         uint256 ctHash,
         uint256 result,
-        address callbackContract,
-        address requestor
+        address,
+        address
     ) external onlyAggregator {
         // This call can be very expensive
         // TODO : Consider using allowance for gas fees and ask the user to pay for it
