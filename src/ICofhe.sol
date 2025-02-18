@@ -46,6 +46,9 @@ interface ITaskManager {
 
     function createDecryptTask(uint256 ctHash, address requestor) external;
     function getDecryptResult(uint256 input) external view returns (uint256);
+    function getDecryptResultSafe(
+        uint256 input
+    ) external view returns (uint256 result, bool decrypted);
     function verifyKey(
         uint256 ctHash,
         uint8 uintType,
