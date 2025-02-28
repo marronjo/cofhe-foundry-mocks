@@ -8,6 +8,7 @@ import {SIGNER_PRIVATE_KEY, EncryptedInput} from "./MockCoFHE.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {Test} from "forge-std/Test.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MockZkVerifier is Test {
     // TMCommon
@@ -79,6 +80,23 @@ contract MockZkVerifier is Test {
 
     // SIGNATURE
 
+    function toHexString(
+        bytes memory data
+    ) public pure returns (string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+
+        for (uint i = 0; i < data.length; i++) {
+            str[2 + i * 2] = alphabet[uint(uint8(data[i] >> 4))];
+            str[3 + i * 2] = alphabet[uint(uint8(data[i] & 0x0f))];
+        }
+
+        return string(str);
+    }
+
     // creates the signature
     function _getSignature(
         uint256 hash,
@@ -90,7 +108,7 @@ contract MockZkVerifier is Test {
         );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PRIVATE_KEY, digest);
-        string memory signature = string(abi.encodePacked(r, s, v)); // note the order here is different from line above.
+        string memory signature = toHexString(abi.encodePacked(r, s, v)); // note the order here is different from line above.
 
         return EncryptedInput(hash, securityZone, utype, signature);
     }

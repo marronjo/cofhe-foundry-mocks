@@ -70,6 +70,44 @@ abstract contract MockCoFHE {
         return strEq(op, Utils.functionIdToString(fid));
     }
 
+    function fromHexString(
+        string memory hexString
+    ) public pure returns (bytes memory) {
+        bytes memory strBytes = bytes(hexString);
+        require(
+            strBytes.length >= 2 && strBytes[0] == "0" && strBytes[1] == "x",
+            "Invalid hex prefix"
+        );
+
+        uint len = (strBytes.length - 2) / 2;
+        bytes memory result = new bytes(len);
+
+        for (uint i = 0; i < len; i++) {
+            result[i] = bytes1(
+                _hexCharToByte(strBytes[2 + i * 2]) *
+                    16 +
+                    _hexCharToByte(strBytes[3 + i * 2])
+            );
+        }
+
+        return result;
+    }
+
+    function _hexCharToByte(bytes1 c) private pure returns (uint8) {
+        if (uint8(c) >= 48 && uint8(c) <= 57) {
+            // '0' - '9'
+            return uint8(c) - 48;
+        } else if (uint8(c) >= 97 && uint8(c) <= 102) {
+            // 'a' - 'f'
+            return uint8(c) - 87;
+        } else if (uint8(c) >= 65 && uint8(c) <= 70) {
+            // 'A' - 'F'
+            return uint8(c) - 55;
+        } else {
+            revert("Invalid hex character");
+        }
+    }
+
     // Storage functions
 
     function _set(uint256 ctHash, uint256 value) internal {
@@ -103,7 +141,7 @@ abstract contract MockCoFHE {
             MessageHashUtils.toEthSignedMessageHash(
                 keccak256(abi.encodePacked(hash, securityZone, utype))
             ),
-            bytes(signature)
+            fromHexString(signature)
         );
 
         if (logOps)
@@ -114,19 +152,6 @@ abstract contract MockCoFHE {
                 recovered == SIGNER_ADDRESS
             );
         if (recovered != SIGNER_ADDRESS) revert InvalidInEuintSignature();
-    }
-
-    function MOCK_replaceHash(uint256 oldHash, uint256 newHash) public {
-        uint256 value = _get(oldHash);
-        inMockStorage[oldHash] = false;
-        mockStorage[oldHash] = 0;
-        _set(newHash, value);
-    }
-
-    function MOCK_stripTrivialEncryptMask(
-        uint256 ctHash
-    ) public pure returns (uint256) {
-        return ctHash & ~triviallyEncryptedMask;
     }
 
     // Mock functions

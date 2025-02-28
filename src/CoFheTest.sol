@@ -103,67 +103,18 @@ contract CoFheTest is Test {
 
     // UTILS
 
-    /**
-     * @notice              Creates an encrypted value of a given type. The hash returned is a pointer to the value in the mocked CoFHE.
-     * @param utype         Type of the encrypted value.
-     * @param value         Value to encrypt.
-     * @return              Hash pointer to the encrypted value.
-     */
-    function trivialEncrypt(
-        uint8 utype,
-        uint256 value
-    ) public returns (uint256) {
-        vm.prank(msg.sender);
-        if (utype == Utils.EBOOL_TFHE) {
-            return ebool.unwrap(FHE.asEbool(value == 1));
-        } else if (utype == Utils.EUINT8_TFHE) {
-            return euint8.unwrap(FHE.asEuint8(uint8(value)));
-        } else if (utype == Utils.EUINT16_TFHE) {
-            return euint16.unwrap(FHE.asEuint16(uint16(value)));
-        } else if (utype == Utils.EUINT32_TFHE) {
-            return euint32.unwrap(FHE.asEuint32(uint32(value)));
-        } else if (utype == Utils.EUINT64_TFHE) {
-            return euint64.unwrap(FHE.asEuint64(uint64(value)));
-        } else if (utype == Utils.EUINT128_TFHE) {
-            return euint128.unwrap(FHE.asEuint128(uint128(value)));
-        } else if (utype == Utils.EUINT256_TFHE) {
-            return euint256.unwrap(FHE.asEuint256(uint256(value)));
-        } else if (utype == Utils.EADDRESS_TFHE) {
-            return eaddress.unwrap(FHE.asEaddress(address(uint160(value))));
-        } else {
-            revert("Invalid utype");
-        }
-    }
-
-    /**
-     * @notice                  Strips the trivial encrypt mask from a given hash.
-     * @param ctHash            Hash of the encrypted value.
-     * @return strippedCtHash   Stripped hash.
-     */
-    function stripTrivialEncryptMask(
-        uint256 ctHash
-    ) internal returns (uint256 strippedCtHash) {
-        // Strip the trivial encrypt mask
-        strippedCtHash = taskManager.MOCK_stripTrivialEncryptMask(ctHash);
-
-        // Replace the hash with the stripped hash in storage
-        taskManager.MOCK_replaceHash(ctHash, strippedCtHash);
-    }
-
     function createEncryptedInput(
         uint8 utype,
         uint256 value,
         int32 securityZone
     ) internal returns (bytes memory) {
-        uint256 ctHash = trivialEncrypt(utype, value);
-        uint256 strippedCtHash = stripTrivialEncryptMask(ctHash);
-        return
-            abi.encode(
-                securityZone,
-                strippedCtHash,
-                utype,
-                "MOCK" // signature
-            );
+        EncryptedInput memory input = zkVerifier.zkVerify(
+            utype,
+            value,
+            msg.sender,
+            securityZone
+        );
+        return abi.encode(securityZone, input.hash, utype, input.signature);
     }
 
     // Derived functions that use the generic create

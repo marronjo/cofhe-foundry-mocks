@@ -32,25 +32,6 @@ contract MockTaskManagerTests is Test {
         thiefDecrypter = new SimpleDecrypter();
     }
 
-    function _testTrivialEncrypt(uint8 utype, uint256 value) internal {
-        uint256 ctHash = CFT.trivialEncrypt(utype, value);
-        CFT.assertStoredValue(ctHash, value);
-    }
-
-    function test_mock_trivialEncrypt() public {
-        _testTrivialEncrypt(Utils.EBOOL_TFHE, 1);
-        _testTrivialEncrypt(Utils.EUINT8_TFHE, 10);
-        _testTrivialEncrypt(Utils.EUINT16_TFHE, 1000);
-        _testTrivialEncrypt(Utils.EUINT32_TFHE, 1000000);
-        _testTrivialEncrypt(Utils.EUINT64_TFHE, 1000000000);
-        _testTrivialEncrypt(Utils.EUINT128_TFHE, 1000000000000);
-        _testTrivialEncrypt(Utils.EUINT256_TFHE, 1000000000000000);
-        _testTrivialEncrypt(
-            Utils.EADDRESS_TFHE,
-            uint256(uint160(0x888888CfAebbEd5554c3F36BfBD233f822e9455f))
-        );
-    }
-
     function test_mock_inEuintXX() public {
         {
             bool boolValue = true;
@@ -322,6 +303,8 @@ contract MockTaskManagerTests is Test {
         uint8 uint8Value = 10;
         vm.prank(address(userAddress));
         inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
+
+        vm.prank(address(userAddress));
         euint8 euint8Value = FHE.asEuint8(inEuint8Value);
 
         // Decrypt reverts (not allowed yet)
