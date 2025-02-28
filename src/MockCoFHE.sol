@@ -2,7 +2,6 @@
 pragma solidity >=0.8.25 <0.9.0;
 
 import {Utils, FunctionId} from "./ICofhe.sol";
-import {TMCommon} from "./MockTaskManager.sol";
 import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./FHE.sol";
@@ -21,6 +20,10 @@ import "./FHE.sol";
  * NOTE: This is not used in production
  */
 abstract contract MockCoFHE {
+    // Pulled from TMCommon
+    uint256 constant uintTypeMask = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
+    uint256 constant triviallyEncryptedMask = type(uint8).max - uintTypeMask; //0x80  1 bit reserved for isTriviallyEncrypted
+
     bool public logOps = true;
 
     mapping(uint256 => uint256) public mockStorage;
@@ -84,7 +87,7 @@ abstract contract MockCoFHE {
     function MOCK_stripTrivialEncryptMask(
         uint256 ctHash
     ) public pure returns (uint256) {
-        return ctHash & ~TMCommon.triviallyEncryptedMask;
+        return ctHash & ~triviallyEncryptedMask;
     }
 
     // Mock functions

@@ -44,6 +44,7 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
 
     /// @custom:storage-location erc7201:fhevm.storage.ACL
     struct ACLStorage {
+        mapping(uint256 handle => bool isGlobal) globalAllowed;
         mapping(uint256 handle => mapping(address account => bool isAllowed)) persistedAllowedPairs;
         mapping(uint256 => bool) allowedForDecryption;
         mapping(address account => mapping(address delegatee => mapping(address contractAddress => bool isDelegate))) delegates;
@@ -101,6 +102,17 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
             revert SenderNotAllowed(requester);
         }
         $.persistedAllowedPairs[handle][account] = true;
+    }
+
+    function allowGlobal(uint256 handle, address requester) public virtual {
+        ACLStorage storage $ = _getACLStorage();
+        if (msg.sender != TASK_MANAGER_ADDRESS) {
+            revert DirectAllowForbidden(msg.sender);
+        }
+        if (!isAllowed(handle, requester)) {
+            revert SenderNotAllowed(requester);
+        }
+        $.globalAllowed[handle] = true;
     }
 
     /**
@@ -267,7 +279,8 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
     ) public view virtual returns (bool) {
         return
             allowedTransient(handle, account) ||
-            persistAllowed(handle, account);
+            persistAllowed(handle, account) ||
+            globalAllowed(handle);
     }
 
     /**
@@ -294,6 +307,11 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
     ) public view virtual returns (bool) {
         ACLStorage storage $ = _getACLStorage();
         return $.persistedAllowedPairs[handle][account];
+    }
+
+    function globalAllowed(uint256 handle) public view virtual returns (bool) {
+        ACLStorage storage $ = _getACLStorage();
+        return $.globalAllowed[handle];
     }
 
     /**

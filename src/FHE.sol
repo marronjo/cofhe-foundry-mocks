@@ -4860,6 +4860,62 @@ library FHE {
         );
     }
 
+    function allowGlobal(ebool ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            ebool.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint8 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint8.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint16 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint16.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint32 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint32.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint64 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint64.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint128 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint128.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(euint256 ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            euint256.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
+    function allowGlobal(eaddress ctHash) internal {
+        ITaskManager(TASK_MANAGER_ADDRESS).allow(
+            eaddress.unwrap(ctHash),
+            msg.sender
+        );
+    }
+
     function allowSender(ebool ctHash) internal {
         ITaskManager(TASK_MANAGER_ADDRESS).allow(
             ebool.unwrap(ctHash),
@@ -5065,6 +5121,9 @@ library BindingsEbool {
     }
     function allowThis(ebool ctHash) internal {
         FHE.allowThis(ctHash);
+    }
+    function allowGlobal(ebool ctHash) internal {
+        FHE.allowGlobal(ctHash);
     }
     function allowSender(ebool ctHash) internal {
         FHE.allowSender(ctHash);
@@ -5308,6 +5367,9 @@ library BindingsEuint8 {
     }
     function allowThis(euint8 ctHash) internal {
         FHE.allowThis(ctHash);
+    }
+    function allowGlobal(euint8 ctHash) internal {
+        FHE.allowGlobal(ctHash);
     }
     function allowSender(euint8 ctHash) internal {
         FHE.allowSender(ctHash);
@@ -5555,6 +5617,9 @@ library BindingsEuint16 {
     function allowThis(euint16 ctHash) internal {
         FHE.allowThis(ctHash);
     }
+    function allowGlobal(euint16 ctHash) internal {
+        FHE.allowGlobal(ctHash);
+    }
     function allowSender(euint16 ctHash) internal {
         FHE.allowSender(ctHash);
     }
@@ -5801,6 +5866,9 @@ library BindingsEuint32 {
     function allowThis(euint32 ctHash) internal {
         FHE.allowThis(ctHash);
     }
+    function allowGlobal(euint32 ctHash) internal {
+        FHE.allowGlobal(ctHash);
+    }
     function allowSender(euint32 ctHash) internal {
         FHE.allowSender(ctHash);
     }
@@ -6029,6 +6097,9 @@ library BindingsEuint64 {
     function allowThis(euint64 ctHash) internal {
         FHE.allowThis(ctHash);
     }
+    function allowGlobal(euint64 ctHash) internal {
+        FHE.allowGlobal(ctHash);
+    }
     function allowSender(euint64 ctHash) internal {
         FHE.allowSender(ctHash);
     }
@@ -6240,6 +6311,9 @@ library BindingsEuint128 {
     function allowThis(euint128 ctHash) internal {
         FHE.allowThis(ctHash);
     }
+    function allowGlobal(euint128 ctHash) internal {
+        FHE.allowGlobal(ctHash);
+    }
     function allowSender(euint128 ctHash) internal {
         FHE.allowSender(ctHash);
     }
@@ -6311,6 +6385,9 @@ library BindingsEuint256 {
     function allowThis(euint256 ctHash) internal {
         FHE.allowThis(ctHash);
     }
+    function allowGlobal(euint256 ctHash) internal {
+        FHE.allowGlobal(ctHash);
+    }
     function allowSender(euint256 ctHash) internal {
         FHE.allowSender(ctHash);
     }
@@ -6381,6 +6458,9 @@ library BindingsEaddress {
     }
     function allowThis(eaddress ctHash) internal {
         FHE.allowThis(ctHash);
+    }
+    function allowGlobal(eaddress ctHash) internal {
+        FHE.allowGlobal(ctHash);
     }
     function allowSender(eaddress ctHash) internal {
         FHE.allowSender(ctHash);

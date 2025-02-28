@@ -3,8 +3,8 @@
 pragma solidity >=0.8.25 <0.9.0;
 import "./ACL.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./ICofhe.sol";
 import {MockCoFHE} from "./MockCoFHE.sol";
+import {ITaskManager, FunctionId, Utils} from "./ICofhe.sol";
 
 // Define an enum to represent the status of a key
 enum KeyStatus {
@@ -604,6 +604,12 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function allow(uint256 ctHash, address account) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
             acl.allow(ctHash, account, msg.sender);
+        }
+    }
+
+    function allowGlobal(uint256 ctHash, address account) external {
+        if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
+            acl.allowGlobal(ctHash, account);
         }
     }
 
