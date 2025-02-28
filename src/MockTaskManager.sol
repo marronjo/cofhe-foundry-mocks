@@ -642,12 +642,15 @@ contract TaskManager is ITaskManager, MockCoFHE {
         uint8 uintType,
         int32 securityZone,
         string memory signature
-    ) private pure returns (bool) {
+    ) private view returns (bool) {
         // TODO : Implement signature verification. signature should include user, securityZone and uintType
         uintType;
         securityZone;
         ctHash;
         signature;
+
+        // NOTE: MOCK
+        MOCK_verifyInEuintSignature(ctHash, securityZone, uintType, signature);
         return true;
     }
 

@@ -3,11 +3,13 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
+import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
 import "./FHE.sol";
-
+import {MockZkVerifier} from "./MockZkVerifier.sol";
 contract CoFheTest is Test {
     TaskManager public taskManager;
+    MockZkVerifier public zkVerifier;
     ACL public acl;
     bool private _log;
 
@@ -28,6 +30,9 @@ contract CoFheTest is Test {
         );
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
         vm.label(address(taskManager), "TaskManager(Mock)");
+
+        zkVerifier = new MockZkVerifier();
+        vm.label(address(zkVerifier), "MockZkVerifier");
 
         acl = new ACL();
         vm.label(address(acl), "ACL");
