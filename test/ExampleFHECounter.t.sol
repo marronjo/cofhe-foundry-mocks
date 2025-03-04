@@ -24,34 +24,34 @@ contract ExampleFHECounterTest is Test {
     function test_setNumber() public {
         inEuint32 memory inNumber = CFT.createInEuint32(10);
         counter.setNumber(inNumber);
-        CFT.assertStoredValue(counter.eNumber(), 10);
+        CFT.assertHashValue(counter.eNumber(), 10);
     }
 
     function test_increment() public {
         counter.increment();
-        CFT.assertStoredValue(counter.eNumber(), 6);
+        CFT.assertHashValue(counter.eNumber(), 6);
     }
 
     function test_add() public {
         inEuint32 memory inNumber = CFT.createInEuint32(2);
         counter.add(inNumber);
-        CFT.assertStoredValue(counter.eNumber(), 7);
+        CFT.assertHashValue(counter.eNumber(), 7);
     }
 
     function test_sub() public {
         inEuint32 memory inNumber = CFT.createInEuint32(3);
         counter.sub(inNumber);
-        CFT.assertStoredValue(counter.eNumber(), 2);
+        CFT.assertHashValue(counter.eNumber(), 2);
     }
 
     function test_mul() public {
         inEuint32 memory inNumber = CFT.createInEuint32(2);
         counter.mul(inNumber);
-        CFT.assertStoredValue(counter.eNumber(), 10);
+        CFT.assertHashValue(counter.eNumber(), 10);
     }
 
     function test_decrypt() public {
-        CFT.assertStoredValue(counter.eNumber(), 5);
+        CFT.assertHashValue(counter.eNumber(), 5);
         counter.decrypt();
 
         uint8 count = 0;
@@ -67,7 +67,7 @@ contract ExampleFHECounterTest is Test {
     }
 
     function test_decryptSafe() public {
-        CFT.assertStoredValue(counter.eNumber(), 5);
+        CFT.assertHashValue(counter.eNumber(), 5);
         counter.decrypt();
 
         uint8 count = 0;

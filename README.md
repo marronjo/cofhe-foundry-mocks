@@ -11,6 +11,10 @@ Need help getting started? Check out the [fhenix documentation](https://docs.fhe
 
 These contracts are still under heavy constructions and will be changing frequently. Consider binding your contracts to a specific version, and keep an eye on the [changelog](https://github.com/FhenixProtocol/cofhe-contracts/CHANGELOG.md)
 
+## Migration
+
+v0.1.3 - Rename `assertStoredValue` to `assertHashValue`
+
 ## Install
 
 ```

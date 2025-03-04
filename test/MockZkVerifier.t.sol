@@ -22,7 +22,7 @@ contract MockZkVerifierTests is Test {
         );
 
         // Hash should be in storage
-        CFT.assertStoredValue(input.hash, 5);
+        CFT.assertHashValue(input.hash, 5);
 
         // Signature should be valid
         CFT.taskManager().MOCK_verifyInEuintSignature(
@@ -50,8 +50,8 @@ contract MockZkVerifierTests is Test {
         );
 
         // Hash should be in storage
-        CFT.assertStoredValue(inputs[0].hash, 5);
-        CFT.assertStoredValue(inputs[1].hash, 6);
+        CFT.assertHashValue(inputs[0].hash, 5);
+        CFT.assertHashValue(inputs[1].hash, 6);
 
         // Signature should be valid
         CFT.taskManager().MOCK_verifyInEuintSignature(

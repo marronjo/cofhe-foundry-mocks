@@ -36,7 +36,7 @@ contract MockTaskManagerTests is Test {
         {
             bool boolValue = true;
             inEbool memory inEboolValue = CFT.createInEbool(boolValue);
-            CFT.assertStoredValue(inEboolValue.hash, 1);
+            CFT.assertHashValue(inEboolValue.hash, 1);
 
             ebool eboolValue = FHE.asEbool(inEboolValue);
             assertEq(inEboolValue.hash, ebool.unwrap(eboolValue));
@@ -45,7 +45,7 @@ contract MockTaskManagerTests is Test {
         {
             uint8 uint8Value = 10;
             inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
-            CFT.assertStoredValue(inEuint8Value.hash, uint8Value);
+            CFT.assertHashValue(inEuint8Value.hash, uint8Value);
 
             euint8 euint8Value = FHE.asEuint8(inEuint8Value);
             assertEq(inEuint8Value.hash, euint8.unwrap(euint8Value));
@@ -54,7 +54,7 @@ contract MockTaskManagerTests is Test {
         {
             uint16 uint16Value = 1000;
             inEuint16 memory inEuint16Value = CFT.createInEuint16(uint16Value);
-            CFT.assertStoredValue(inEuint16Value.hash, uint16Value);
+            CFT.assertHashValue(inEuint16Value.hash, uint16Value);
 
             euint16 euint16Value = FHE.asEuint16(inEuint16Value);
             assertEq(inEuint16Value.hash, euint16.unwrap(euint16Value));
@@ -63,7 +63,7 @@ contract MockTaskManagerTests is Test {
         {
             uint32 uint32Value = 1000000;
             inEuint32 memory inEuint32Value = CFT.createInEuint32(uint32Value);
-            CFT.assertStoredValue(inEuint32Value.hash, uint32Value);
+            CFT.assertHashValue(inEuint32Value.hash, uint32Value);
 
             euint32 euint32Value = FHE.asEuint32(inEuint32Value);
             assertEq(inEuint32Value.hash, euint32.unwrap(euint32Value));
@@ -72,7 +72,7 @@ contract MockTaskManagerTests is Test {
         {
             uint64 uint64Value = 1000000000;
             inEuint64 memory inEuint64Value = CFT.createInEuint64(uint64Value);
-            CFT.assertStoredValue(inEuint64Value.hash, uint64Value);
+            CFT.assertHashValue(inEuint64Value.hash, uint64Value);
 
             euint64 euint64Value = FHE.asEuint64(inEuint64Value);
             assertEq(inEuint64Value.hash, euint64.unwrap(euint64Value));
@@ -83,7 +83,7 @@ contract MockTaskManagerTests is Test {
             inEuint128 memory inEuint128Value = CFT.createInEuint128(
                 uint128Value
             );
-            CFT.assertStoredValue(inEuint128Value.hash, uint128Value);
+            CFT.assertHashValue(inEuint128Value.hash, uint128Value);
 
             euint128 euint128Value = FHE.asEuint128(inEuint128Value);
             assertEq(inEuint128Value.hash, euint128.unwrap(euint128Value));
@@ -94,7 +94,7 @@ contract MockTaskManagerTests is Test {
             inEuint256 memory inEuint256Value = CFT.createInEuint256(
                 uint256Value
             );
-            CFT.assertStoredValue(inEuint256Value.hash, uint256Value);
+            CFT.assertHashValue(inEuint256Value.hash, uint256Value);
 
             euint256 euint256Value = FHE.asEuint256(inEuint256Value);
             assertEq(inEuint256Value.hash, euint256.unwrap(euint256Value));
@@ -105,7 +105,7 @@ contract MockTaskManagerTests is Test {
             inEaddress memory inEaddressValue = CFT.createInEaddress(
                 addressValue
             );
-            CFT.assertStoredValue(
+            CFT.assertHashValue(
                 inEaddressValue.hash,
                 uint256(uint160(addressValue))
             );
@@ -127,14 +127,14 @@ contract MockTaskManagerTests is Test {
 
         euint32 euintC = FHE.select(eboolValue, euintA, euintB);
 
-        CFT.assertStoredValue(euint32.unwrap(euintC), uint32A);
+        CFT.assertHashValue(euint32.unwrap(euintC), uint32A);
 
         boolValue = false;
         eboolValue = FHE.asEbool(boolValue);
 
         euintC = FHE.select(eboolValue, euintA, euintB);
 
-        CFT.assertStoredValue(euint32.unwrap(euintC), uint32B);
+        CFT.assertHashValue(euint32.unwrap(euintC), uint32B);
     }
 
     function test_mock_euint32_operations() public {
@@ -150,56 +150,56 @@ contract MockTaskManagerTests is Test {
             // Test not (only works on ebool)
             ebool eboolVal = FHE.asEbool(true);
             ebool notResult = FHE.not(eboolVal);
-            CFT.assertStoredValue(notResult, false);
+            CFT.assertHashValue(notResult, false);
         }
         {
             // Test square
             euint32 squared = FHE.square(ea);
-            CFT.assertStoredValue(squared, a * a);
+            CFT.assertHashValue(squared, a * a);
         }
 
         // Test two-input operations
         {
             // Arithmetic operations
             euint32 sum = FHE.add(ea, eb);
-            CFT.assertStoredValue(sum, a + b);
+            CFT.assertHashValue(sum, a + b);
         }
         {
             // Test subtraction
             euint32 diff = FHE.sub(ea, eb);
-            CFT.assertStoredValue(diff, a - b);
+            CFT.assertHashValue(diff, a - b);
         }
         {
             // Test multiplication
             euint32 prod = FHE.mul(ea, eb);
-            CFT.assertStoredValue(prod, a * b);
+            CFT.assertHashValue(prod, a * b);
         }
         {
             // Test division
             euint32 div = FHE.div(ea, eb);
-            CFT.assertStoredValue(div, a / b);
+            CFT.assertHashValue(div, a / b);
         }
         {
             // Test remainder
             euint32 rem = FHE.rem(ea, eb);
-            CFT.assertStoredValue(rem, a % b);
+            CFT.assertHashValue(rem, a % b);
         }
 
         // Bitwise operations
         {
             // Test bitwise AND
             euint32 andResult = FHE.and(ea, eb);
-            CFT.assertStoredValue(andResult, a & b);
+            CFT.assertHashValue(andResult, a & b);
         }
         {
             // Test bitwise OR
             euint32 orResult = FHE.or(ea, eb);
-            CFT.assertStoredValue(orResult, a | b);
+            CFT.assertHashValue(orResult, a | b);
         }
         {
             // Test bitwise XOR
             euint32 xorResult = FHE.xor(ea, eb);
-            CFT.assertStoredValue(xorResult, a ^ b);
+            CFT.assertHashValue(xorResult, a ^ b);
         }
 
         // Shift operations
@@ -209,72 +209,72 @@ contract MockTaskManagerTests is Test {
             euint32 es = FHE.asEuint32(shift);
 
             euint32 shl = FHE.shl(ea, es);
-            CFT.assertStoredValue(shl, a << shift);
+            CFT.assertHashValue(shl, a << shift);
         }
         {
             // Test shift right
             euint32 es = FHE.asEuint32(shift);
 
             euint32 shr = FHE.shr(ea, es);
-            CFT.assertStoredValue(shr, a >> shift);
+            CFT.assertHashValue(shr, a >> shift);
         }
         {
             // Test rol
             euint32 es = FHE.asEuint32(shift);
 
             euint32 rol = FHE.rol(ea, es);
-            CFT.assertStoredValue(rol, a << shift); // Note: rol is implemented as shl in the mock
+            CFT.assertHashValue(rol, a << shift); // Note: rol is implemented as shl in the mock
         }
         {
             // Test ror
             euint32 es = FHE.asEuint32(shift);
 
             euint32 ror = FHE.ror(ea, es);
-            CFT.assertStoredValue(ror, a >> shift); // Note: ror is implemented as shr in the mock
+            CFT.assertHashValue(ror, a >> shift); // Note: ror is implemented as shr in the mock
         }
 
         // Comparison operations
         {
             // Test greater than
             ebool gt = FHE.gt(ea, eb);
-            CFT.assertStoredValue(gt, a > b);
+            CFT.assertHashValue(gt, a > b);
         }
         {
             // Test less than
             ebool lt = FHE.lt(ea, eb);
-            CFT.assertStoredValue(lt, a < b);
+            CFT.assertHashValue(lt, a < b);
         }
         {
             // Test greater than or equal to
             ebool gte = FHE.gte(ea, eb);
-            CFT.assertStoredValue(gte, a >= b);
+            CFT.assertHashValue(gte, a >= b);
         }
         {
             // Test less than or equal to
             ebool lte = FHE.lte(ea, eb);
-            CFT.assertStoredValue(lte, a <= b);
+            CFT.assertHashValue(lte, a <= b);
         }
         {
             // Test equal to
             ebool eq = FHE.eq(ea, eb);
-            CFT.assertStoredValue(eq, a == b);
+            CFT.assertHashValue(eq, a == b);
         }
         {
             // Test not equal to
             ebool ne = FHE.ne(ea, eb);
-            CFT.assertStoredValue(ne, a != b);
+            CFT.assertHashValue(ne, a != b);
         }
 
         // Min/Max operations
         {
             // Test min
             euint32 min = FHE.min(ea, eb);
-            CFT.assertStoredValue(min, a < b ? a : b);
+            CFT.assertHashValue(min, a < b ? a : b);
         }
         {
             // Test max
             euint32 max = FHE.max(ea, eb);
-            CFT.assertStoredValue(max, a > b ? a : b);
+            CFT.assertHashValue(max, a > b ? a : b);
         }
     }
 
