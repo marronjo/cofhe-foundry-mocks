@@ -73,10 +73,6 @@ library TMCommon {
         return result;
     }
 
-    function hashToString(uint256 value) internal pure returns (string memory) {
-        return bytesToHexString(uint256ToBytes32(value));
-    }
-
     function combineInputs(
         uint256[] memory encryptedHashes,
         uint256[] memory extraInputs
@@ -103,21 +99,6 @@ library TMCommon {
             hashes[i] = inputs[i].hash;
         }
         return hashes;
-    }
-
-    function bytesToHexString(
-        bytes memory buffer
-    ) internal pure returns (string memory) {
-        // Each byte takes 2 characters
-        bytes memory hexChars = new bytes(buffer.length * 2);
-
-        for (uint i = 0; i < buffer.length; i++) {
-            uint8 value = uint8(buffer[i]);
-            hexChars[i * 2] = byteToChar(value / 16);
-            hexChars[i * 2 + 1] = byteToChar(value % 16);
-        }
-
-        return string(hexChars);
     }
 
     function bytesToUint256(bytes memory b) internal pure returns (uint256) {
@@ -580,7 +561,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         uint256 ctHash,
         uint8 uintType,
         int32 securityZone,
-        string memory signature,
+        bytes memory signature,
         uint8 desiredType
     ) external {
         verifyType(uintType, desiredType);
@@ -641,7 +622,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         uint256 ctHash,
         uint8 uintType,
         int32 securityZone,
-        string memory signature
+        bytes memory signature
     ) private view returns (bool) {
         // TODO : Implement signature verification. signature should include user, securityZone and uintType
         uintType;

@@ -53,7 +53,7 @@ interface ITaskManager {
         uint256 ctHash,
         uint8 uintType,
         int32 securityZone,
-        string memory signature,
+        bytes memory signature,
         uint8 desiredType
     ) external;
 

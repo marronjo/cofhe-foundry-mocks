@@ -19,56 +19,56 @@ struct inEbool {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint8 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint16 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint32 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint64 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint128 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEuint256 {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 struct inEaddress {
     int32 securityZone;
     uint256 hash;
     uint8 utype;
-    string signature;
+    bytes signature;
 }
 
 // ================================
@@ -122,83 +122,6 @@ library Common {
         }
     }
 
-    function bytesToUint256(bytes memory b) internal pure returns (uint256) {
-        require(
-            b.length == 32,
-            string(
-                abi.encodePacked(
-                    "Input bytes length must be 32, but got ",
-                    Strings.toString(b.length)
-                )
-            )
-        );
-
-        uint256 result;
-        assembly {
-            result := mload(add(b, 32))
-        }
-        return result;
-    }
-
-    function hexCharToUint8(bytes1 char) internal pure returns (uint8) {
-        if (char >= "0" && char <= "9") {
-            return uint8(char) - uint8(bytes1("0"));
-        } else if (char >= "a" && char <= "f") {
-            return uint8(char) - uint8(bytes1("a")) + 10;
-        } else if (char >= "A" && char <= "F") {
-            return uint8(char) - uint8(bytes1("A")) + 10;
-        } else {
-            revert("Invalid hex character");
-        }
-    }
-
-    function hexStringToUint(
-        string memory hexString
-    ) internal pure returns (uint8) {
-        require(bytes(hexString).length == 2, "Invalid hex string length");
-
-        uint8 value = 0;
-        for (uint8 i = 0; i < 2; i++) {
-            value = value * 16 + hexCharToUint8(bytes(hexString)[i]);
-        }
-
-        return value;
-    }
-
-    function hexStringToBytes32(
-        string memory hexString
-    ) internal pure returns (bytes memory) {
-        bytes memory hexBytes = bytes(hexString);
-        // Ensure the string has the correct length (64 characters for 32 bytes)
-        require(hexBytes.length == 64, "Invalid hex string length");
-
-        // Iterate every 2 bytes in string, consider them as 1 byte
-        bytes memory bb = new bytes(32);
-        string memory l = "";
-        for (uint i = 0; i < 32; i++) {
-            l = string(
-                abi.encodePacked("", hexBytes[i * 2], hexBytes[i * 2 + 1])
-            );
-            bb[i] = bytes1(hexStringToUint(l));
-        }
-
-        return bb;
-    }
-
-    function bytesArrayToString(
-        bytes memory a
-    ) internal pure returns (string memory) {
-        string memory b = "[";
-        for (uint i = 0; i < a.length; i++) {
-            b = string(
-                abi.encodePacked(b, Strings.toHexString(uint8(a[i])), " ")
-            );
-        }
-
-        b = string(abi.encodePacked(b, "]"));
-        return b;
-    }
-
     function functionCodeToBytes1(
         string memory functionCode
     ) internal pure returns (bytes memory) {
@@ -209,30 +132,6 @@ library Common {
         }
 
         return result;
-    }
-
-    function bytesToHexString(
-        bytes memory buffer
-    ) internal pure returns (string memory) {
-        // Each byte takes 2 characters
-        bytes memory hexChars = new bytes(buffer.length * 2);
-
-        for (uint i = 0; i < buffer.length; i++) {
-            uint8 value = uint8(buffer[i]);
-            hexChars[i * 2] = byteToChar(value / 16);
-            hexChars[i * 2 + 1] = byteToChar(value % 16);
-        }
-
-        return string(hexChars);
-    }
-
-    // Helper function for bytesToHexString
-    function byteToChar(uint8 value) internal pure returns (bytes1) {
-        if (value < 10) {
-            return bytes1(uint8(48 + value)); // 0-9
-        } else {
-            return bytes1(uint8(87 + value)); // a-f
-        }
     }
 
     function uint256ToBytes32(
