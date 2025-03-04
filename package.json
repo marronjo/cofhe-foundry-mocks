@@ -1,10 +1,13 @@
 {
 	"name": "@fhenixprotocol/cofhe-foundry-mocks",
 	"description": "Utility contracts for locally testing CoFHE with FHE primitives locally in foundry.",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"author": {
 		"name": "FhenixProtocol",
 		"url": "https://github.com/FhenixProtocol/cofhe-foundry-mocks"
+	},
+	"scripts": {
+		"test": "forge test -vvv"
 	},
 	"license": "MIT",
 	"files": [
