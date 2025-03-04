@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
 import "./FHE.sol";
 import {MockZkVerifier} from "./MockZkVerifier.sol";
+import {ZK_VERIFIER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
+
 contract CoFheTest is Test {
     TaskManager public taskManager;
     MockZkVerifier public zkVerifier;
@@ -31,7 +33,8 @@ contract CoFheTest is Test {
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
         vm.label(address(taskManager), "TaskManager(Mock)");
 
-        zkVerifier = new MockZkVerifier();
+        deployCodeTo("MockZkVerifier.sol:MockZkVerifier", ZK_VERIFIER_ADDRESS);
+        zkVerifier = MockZkVerifier(ZK_VERIFIER_ADDRESS);
         vm.label(address(zkVerifier), "MockZkVerifier");
 
         acl = new ACL();
