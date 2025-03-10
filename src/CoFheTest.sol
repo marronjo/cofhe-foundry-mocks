@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
 import "./FHE.sol";
 import {MockZkVerifier} from "./MockZkVerifier.sol";
 import {ZK_VERIFIER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {Permission, PermissionUtils} from "./Permissioned.sol";
 
 contract CoFheTest is Test {
     TaskManager public taskManager;
@@ -38,6 +40,7 @@ contract CoFheTest is Test {
         vm.label(address(zkVerifier), "MockZkVerifier");
 
         acl = new ACL();
+        acl.initialize(TM_ADMIN);
         vm.label(address(acl), "ACL");
 
         vm.prank(TM_ADMIN);
@@ -369,5 +372,114 @@ contract CoFheTest is Test {
         address value
     ) public returns (inEaddress memory) {
         return createInEaddress(value, 0);
+    }
+
+    // PERMISSIONS
+
+    bytes32 private constant PERMISSION_TYPE_HASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+    bytes32 private constant PERMISSION_NAME_HASH =
+        keccak256("Fhenix Access Control Permission");
+    bytes32 private constant PERMISSION_VERSION_HASH = keccak256("1");
+
+    function permissionDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    PERMISSION_TYPE_HASH,
+                    PERMISSION_NAME_HASH,
+                    PERMISSION_VERSION_HASH,
+                    block.chainid,
+                    address(acl)
+                )
+            );
+    }
+
+    function permissionHashTypedDataV4(
+        bytes32 structHash
+    ) internal view returns (bytes32) {
+        return
+            MessageHashUtils.toTypedDataHash(
+                permissionDomainSeparator(),
+                structHash
+            );
+    }
+
+    function signPermission(
+        uint256 pkey,
+        bytes32 structHash
+    ) public pure returns (bytes memory signature) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(pkey, structHash);
+        return abi.encodePacked(r, s, v); // note the order here is different from line above.
+    }
+
+    function signPermissionSelf(
+        uint256 pkey,
+        Permission memory permission
+    ) public view returns (Permission memory signedPermission) {
+        signedPermission = permission;
+
+        bytes32 permissionHash = PermissionUtils.issuerSelfHash(permission);
+        bytes32 structHash = permissionHashTypedDataV4(permissionHash);
+
+        signedPermission.issuerSignature = signPermission(pkey, structHash);
+    }
+
+    function signPermissionShared(
+        uint256 pkey,
+        Permission memory permission
+    ) public view returns (Permission memory signedPermission) {
+        signedPermission = permission;
+        bytes32 permissionHash = PermissionUtils.issuerSharedHash(permission);
+        bytes32 structHash = permissionHashTypedDataV4(permissionHash);
+
+        signedPermission.issuerSignature = signPermission(pkey, structHash);
+    }
+
+    function signPermissionRecipient(
+        uint256 pkey,
+        Permission memory permission
+    ) public view returns (Permission memory signedPermission) {
+        signedPermission = permission;
+
+        bytes32 permissionHash = PermissionUtils.recipientHash(permission);
+        bytes32 structHash = permissionHashTypedDataV4(permissionHash);
+
+        signedPermission.recipientSignature = signPermission(pkey, structHash);
+    }
+
+    function createBasePermission()
+        public
+        pure
+        returns (Permission memory permission)
+    {
+        permission = Permission({
+            issuer: address(0),
+            expiration: 10000000000,
+            recipient: address(0),
+            validatorId: 0,
+            validatorContract: address(0),
+            sealingKey: bytes32(0),
+            issuerSignature: new bytes(0),
+            recipientSignature: new bytes(0)
+        });
+    }
+
+    function createPermissionSelf(
+        address issuer
+    ) public pure returns (Permission memory permission) {
+        permission = createBasePermission();
+        permission.issuer = issuer;
+    }
+
+    function createPermissionShared(
+        address issuer,
+        address recipient
+    ) public pure returns (Permission memory permission) {
+        permission = createBasePermission();
+        permission.issuer = issuer;
+        permission.recipient = recipient;
     }
 }

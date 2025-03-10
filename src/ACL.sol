@@ -5,6 +5,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {taskManagerAddress} from "./addresses/TaskManagerAddress.sol";
+import {Permission, PermissionedUpgradeable} from "./Permissioned.sol";
 
 /**
  * @title  ACL
@@ -13,7 +14,11 @@ import {taskManagerAddress} from "./addresses/TaskManagerAddress.sol";
  *         By defining and enforcing these permissions, the ACL ensures that encrypted data remains secure while still being usable
  *         within authorized contexts.
  */
-contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
+contract ACL is
+    PermissionedUpgradeable,
+    UUPSUpgradeable,
+    Ownable2StepUpgradeable
+{
     /// @notice Returned if the delegatee contract is already delegatee for sender & delegator addresses.
     error AlreadyDelegated();
 
@@ -71,7 +76,7 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        _disableInitializers();
+        // _disableInitializers();
     }
 
     /**
@@ -80,6 +85,7 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
      */
     function initialize(address initialOwner) public initializer {
         __Ownable_init(initialOwner);
+        __PermissionedUpgradeable_init();
     }
 
     /**
@@ -368,5 +374,12 @@ contract ACL is UUPSUpgradeable, Ownable2StepUpgradeable {
         assembly {
             $.slot := ACLStorageLocation
         }
+    }
+
+    function isAllowedWithPermission(
+        Permission memory permission,
+        uint256 handle
+    ) public view withPermission(permission) returns (bool) {
+        return isAllowed(handle, permission.issuer);
     }
 }
