@@ -54,11 +54,11 @@ contract QueryDecryptTest is Test {
         Permission memory permission = CFT.createPermissionSelf(bob);
         permission = CFT.signPermissionSelf(bobPKey, permission);
 
-        bool allowed = CFT.acl().isAllowedWithPermission(
+        uint256 decrypted = CFT.queryDecrypt(
             permission,
             euint32.unwrap(result)
         );
-        assertTrue(allowed);
+        assertEq(decrypted, 100);
     }
 
     function test_getBalance_queryDecrypt_shared() public {
@@ -73,10 +73,10 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionShared(bobPKey, permission);
         permission = CFT.signPermissionRecipient(alicePKey, permission);
 
-        bool allowed = CFT.acl().isAllowedWithPermission(
+        uint256 decrypted = CFT.queryDecrypt(
             permission,
             euint32.unwrap(result)
         );
-        assertTrue(allowed);
+        assertEq(decrypted, 100);
     }
 }

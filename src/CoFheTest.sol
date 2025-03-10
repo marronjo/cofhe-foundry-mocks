@@ -10,11 +10,15 @@ import {MockZkVerifier} from "./MockZkVerifier.sol";
 import {ZK_VERIFIER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {Permission, PermissionUtils} from "./Permissioned.sol";
+import {MockQueryDecrypter} from "./MockQueryDecrypter.sol";
+import {QUERY_DECRYPTER_ADDRESS} from "./addresses/QueryDecrypterAddress.sol";
 
 contract CoFheTest is Test {
     TaskManager public taskManager;
     MockZkVerifier public zkVerifier;
     ACL public acl;
+    MockQueryDecrypter public queryDecrypter;
+
     bool private _log;
 
     address public constant TM_ADMIN = address(128);
@@ -45,6 +49,13 @@ contract CoFheTest is Test {
 
         vm.prank(TM_ADMIN);
         taskManager.setACLContract(address(acl));
+
+        deployCodeTo(
+            "MockQueryDecrypter.sol:MockQueryDecrypter",
+            QUERY_DECRYPTER_ADDRESS
+        );
+        queryDecrypter = MockQueryDecrypter(QUERY_DECRYPTER_ADDRESS);
+        vm.label(address(queryDecrypter), "MockQueryDecrypter");
 
         // Set log setting
         taskManager.setLogOps(_log);
@@ -481,5 +492,12 @@ contract CoFheTest is Test {
         permission = createBasePermission();
         permission.issuer = issuer;
         permission.recipient = recipient;
+    }
+
+    function queryDecrypt(
+        Permission memory permission,
+        uint256 ctHash
+    ) public view returns (uint256) {
+        return queryDecrypter.queryDecrypt(permission, ctHash);
     }
 }
