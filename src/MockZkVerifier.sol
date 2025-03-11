@@ -73,27 +73,27 @@ contract MockZkVerifier is Test {
         salt += 1;
 
         // Calculate Keccak256 hash
-        bytes32 hash = keccak256(combined);
+        bytes32 ctHash = keccak256(combined);
 
-        return _appendMetadata(uint256(hash), securityZone, utype, false);
+        return _appendMetadata(uint256(ctHash), securityZone, utype, false);
     }
 
     // SIGNATURE
 
     // creates the signature
     function _getSignature(
-        uint256 hash,
+        uint256 ctHash,
         int32 securityZone,
         uint8 utype
     ) internal pure returns (EncryptedInput memory) {
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(
-            keccak256(abi.encodePacked(hash, securityZone, utype))
+            keccak256(abi.encodePacked(ctHash, securityZone, utype))
         );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PRIVATE_KEY, digest);
         bytes memory signature = abi.encodePacked(r, s, v); // note the order here is different from line above.
 
-        return EncryptedInput(hash, securityZone, utype, signature);
+        return EncryptedInput(ctHash, securityZone, utype, signature);
     }
 
     // CORE
@@ -121,8 +121,8 @@ contract MockZkVerifier is Test {
         address user,
         int32 securityZone
     ) public returns (EncryptedInput memory) {
-        uint256 hash = _calcPlaceholderKey(user, utype, securityZone, value);
-        TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(hash, value);
-        return _getSignature(hash, securityZone, utype);
+        uint256 ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
+        TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);
+        return _getSignature(ctHash, securityZone, utype);
     }
 }

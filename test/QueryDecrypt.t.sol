@@ -52,7 +52,7 @@ contract QueryDecryptTest is Test {
         euint32 result = example.getBalance(bob);
 
         Permission memory permission = CFT.createPermissionSelf(bob);
-        permission = CFT.signPermissionSelf(bobPKey, permission);
+        permission = CFT.signPermissionSelf(permission, bobPKey);
 
         uint256 decrypted = CFT.queryDecrypt(
             permission,
@@ -70,13 +70,39 @@ contract QueryDecryptTest is Test {
         euint32 result = example.getBalance(bob);
 
         Permission memory permission = CFT.createPermissionShared(bob, alice);
-        permission = CFT.signPermissionShared(bobPKey, permission);
-        permission = CFT.signPermissionRecipient(alicePKey, permission);
+        permission = CFT.signPermissionShared(permission, bobPKey);
+        permission = CFT.signPermissionRecipient(permission, alicePKey);
+
+        console.logBytes(permission.issuerSignature);
 
         uint256 decrypted = CFT.queryDecrypt(
             permission,
             euint32.unwrap(result)
         );
         assertEq(decrypted, 100);
+
+        console.logBytes32(permission.sealingKey);
+    }
+
+    function test_getBalance_querySealOutput() public {
+        inEuint32 memory inAmount = CFT.createInEuint32(100);
+
+        vm.prank(bob);
+        example.setBalance(inAmount);
+
+        euint32 result = example.getBalance(bob);
+
+        Permission memory permission = CFT.createPermissionSelf(bob);
+        bytes32 sealingKey = CFT.createSealingKey(bobPKey);
+        permission.sealingKey = sealingKey;
+        permission = CFT.signPermissionSelf(permission, bobPKey);
+
+        bytes32 sealedOutput = CFT.querySealOutput(
+            permission,
+            euint32.unwrap(result)
+        );
+
+        uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);
+        assertEq(unsealed, 100);
     }
 }

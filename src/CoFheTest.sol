@@ -419,46 +419,46 @@ contract CoFheTest is Test {
     }
 
     function signPermission(
-        uint256 pkey,
-        bytes32 structHash
+        bytes32 structHash,
+        uint256 pkey
     ) public pure returns (bytes memory signature) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pkey, structHash);
         return abi.encodePacked(r, s, v); // note the order here is different from line above.
     }
 
     function signPermissionSelf(
-        uint256 pkey,
-        Permission memory permission
+        Permission memory permission,
+        uint256 pkey
     ) public view returns (Permission memory signedPermission) {
         signedPermission = permission;
 
         bytes32 permissionHash = PermissionUtils.issuerSelfHash(permission);
         bytes32 structHash = permissionHashTypedDataV4(permissionHash);
 
-        signedPermission.issuerSignature = signPermission(pkey, structHash);
+        signedPermission.issuerSignature = signPermission(structHash, pkey);
     }
 
     function signPermissionShared(
-        uint256 pkey,
-        Permission memory permission
+        Permission memory permission,
+        uint256 pkey
     ) public view returns (Permission memory signedPermission) {
         signedPermission = permission;
         bytes32 permissionHash = PermissionUtils.issuerSharedHash(permission);
         bytes32 structHash = permissionHashTypedDataV4(permissionHash);
 
-        signedPermission.issuerSignature = signPermission(pkey, structHash);
+        signedPermission.issuerSignature = signPermission(structHash, pkey);
     }
 
     function signPermissionRecipient(
-        uint256 pkey,
-        Permission memory permission
+        Permission memory permission,
+        uint256 pkey
     ) public view returns (Permission memory signedPermission) {
         signedPermission = permission;
 
         bytes32 permissionHash = PermissionUtils.recipientHash(permission);
         bytes32 structHash = permissionHashTypedDataV4(permissionHash);
 
-        signedPermission.recipientSignature = signPermission(pkey, structHash);
+        signedPermission.recipientSignature = signPermission(structHash, pkey);
     }
 
     function createBasePermission()
@@ -494,10 +494,25 @@ contract CoFheTest is Test {
         permission.recipient = recipient;
     }
 
+    function createSealingKey(uint256 seed) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(seed));
+    }
+
     function queryDecrypt(
         Permission memory permission,
         uint256 ctHash
     ) public view returns (uint256) {
         return queryDecrypter.queryDecrypt(permission, ctHash);
+    }
+
+    function querySealOutput(
+        Permission memory permission,
+        uint256 ctHash
+    ) public view returns (bytes32) {
+        return queryDecrypter.querySealOutput(permission, ctHash);
+    }
+
+    function unseal(bytes32 hashed, bytes32 key) public view returns (uint256) {
+        return queryDecrypter.unseal(hashed, key);
     }
 }
