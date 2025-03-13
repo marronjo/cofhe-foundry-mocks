@@ -20,6 +20,14 @@ contract MockQueryDecrypter {
         acl = ACL(taskManager.acl());
     }
 
+    // EXISTENCE
+
+    function exists() public pure returns (bool) {
+        return true;
+    }
+
+    // BODY
+
     function queryDecrypt(
         Permission memory permission,
         uint256 ctHash

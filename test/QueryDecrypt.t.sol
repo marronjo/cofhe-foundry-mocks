@@ -5,7 +5,14 @@ import {Test, console} from "forge-std/Test.sol";
 import {ExampleFHECounter} from "./ExampleFHECounter.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
 import {FHE, euint32, inEuint32} from "../src/FHE.sol";
-import {Permission} from "../src/Permissioned.sol";
+import {PermissionedUpgradeable, Permission, PermissionUtils} from "../src/Permissioned.sol";
+
+interface IIsAllowedWithPermission {
+    function isAllowedWithPermission(
+        Permission memory permission,
+        uint256 handle
+    ) external view returns (bool);
+}
 
 contract QueryDecryptExample {
     mapping(address => euint32) private balances;
@@ -104,5 +111,43 @@ contract QueryDecryptTest is Test {
 
         uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);
         assertEq(unsealed, 100);
+    }
+
+    function test_permission() public {
+        Permission memory permission = Permission({
+            issuer: 0x4e6206fC78674E5eFf48Dcd0166060f95a832c60,
+            expiration: 1000000000000,
+            recipient: 0x0000000000000000000000000000000000000000,
+            validatorId: 0,
+            validatorContract: 0x0000000000000000000000000000000000000000,
+            issuerSignature: hex"05d8577c0e922adcf472a885bbb6d18d329b528942034132048f5d1e42c949952aea82ee8e15873d676874ab4f6606d1623f282d52e0683e56efad7ba011bed21c",
+            recipientSignature: hex"",
+            sealingKey: 0x570e3f943655906c103fe71fa3fc15af65e157092e8e5499fc24a826e48c9019
+        });
+
+        bytes32 issuerHash = PermissionUtils.issuerHash(permission);
+        bytes32 structHash = PermissionedUpgradeable(CFT.acl()).hashTypedDataV4(
+            bytes32(0)
+        );
+
+        console.log(
+            "Last Handle",
+            uint256(PermissionUtils.issuerHash(permission))
+        );
+        console.log("Struct Hash", uint256(structHash));
+
+        (
+            bytes1 fields,
+            string memory name,
+            string memory version,
+            uint256 chainId,
+            address verifyingContract,
+            bytes32 salt,
+            uint256[] memory extensions
+        ) = PermissionedUpgradeable(CFT.acl()).eip712Domain();
+        console.log("Name", name);
+        console.log("Version", version);
+        console.log("Chain Id", chainId);
+        console.log("Verifying Contract", verifyingContract);
     }
 }

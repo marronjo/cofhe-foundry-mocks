@@ -6,11 +6,8 @@ pragma solidity >=0.8.19 <0.9.0;
 import {TASK_MANAGER_ADDRESS} from "./FHE.sol";
 import {SIGNER_PRIVATE_KEY, EncryptedInput} from "./MockCoFHE.sol";
 import {TaskManager} from "./MockTaskManager.sol";
-import {Test} from "forge-std/Test.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-contract MockZkVerifier is Test {
+contract MockZkVerifier {
     // TMCommon
     uint256 constant hashMaskForMetadata = type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
     uint256 constant uintTypeMask = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
@@ -19,6 +16,12 @@ contract MockZkVerifier is Test {
     // Specific
     uint256 salt = 0;
     error InvalidInputs();
+
+    // EXISTENCE
+
+    function exists() public pure returns (bool) {
+        return true;
+    }
 
     // HASHING
 
@@ -78,31 +81,14 @@ contract MockZkVerifier is Test {
         return _appendMetadata(uint256(ctHash), securityZone, utype, false);
     }
 
-    // SIGNATURE
-
-    // creates the signature
-    function _getSignature(
-        uint256 ctHash,
-        int32 securityZone,
-        uint8 utype
-    ) internal pure returns (EncryptedInput memory) {
-        bytes32 digest = MessageHashUtils.toEthSignedMessageHash(
-            keccak256(abi.encodePacked(ctHash, securityZone, utype))
-        );
-
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PRIVATE_KEY, digest);
-        bytes memory signature = abi.encodePacked(r, s, v); // note the order here is different from line above.
-
-        return EncryptedInput(ctHash, securityZone, utype, signature);
-    }
-
     // CORE
 
     function zkVerifyPacked(
-        uint8[] memory utypes,
         uint256[] memory values,
+        uint8[] memory utypes,
         address user,
-        int32 securityZone
+        int32 securityZone,
+        uint256 chainId
     ) public returns (EncryptedInput[] memory inputs) {
         if (utypes.length != values.length) {
             revert InvalidInputs();
@@ -111,18 +97,31 @@ contract MockZkVerifier is Test {
         inputs = new EncryptedInput[](utypes.length);
 
         for (uint256 i = 0; i < utypes.length; i++) {
-            inputs[i] = zkVerify(utypes[i], values[i], user, securityZone);
+            inputs[i] = zkVerify(
+                values[i],
+                utypes[i],
+                user,
+                securityZone,
+                chainId
+            );
         }
     }
 
     function zkVerify(
-        uint8 utype,
         uint256 value,
+        uint8 utype,
         address user,
-        int32 securityZone
+        int32 securityZone,
+        uint256 chainId
     ) public returns (EncryptedInput memory) {
         uint256 ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
         TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);
-        return _getSignature(ctHash, securityZone, utype);
+        return
+            EncryptedInput({
+                hash: ctHash,
+                securityZone: securityZone,
+                utype: utype,
+                signature: hex""
+            });
     }
 }

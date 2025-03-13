@@ -15,11 +15,14 @@ contract MockZkVerifierTests is Test {
 
     function test_zkVerify() public {
         EncryptedInput memory input = CFT.zkVerifier().zkVerify(
-            Utils.EUINT8_TFHE,
             5,
+            Utils.EUINT8_TFHE,
             address(128),
-            0
+            0,
+            block.chainid
         );
+
+        input = CFT.zkVerifierSigner().zkVerifySign(input);
 
         // Hash should be in storage
         CFT.assertHashValue(input.hash, 5);
@@ -43,11 +46,14 @@ contract MockZkVerifierTests is Test {
         values[1] = 6;
 
         EncryptedInput[] memory inputs = CFT.zkVerifier().zkVerifyPacked(
-            utypes,
             values,
+            utypes,
             address(128),
-            0
+            0,
+            block.chainid
         );
+
+        inputs = CFT.zkVerifierSigner().zkVerifySignPacked(inputs);
 
         // Hash should be in storage
         CFT.assertHashValue(inputs[0].hash, 5);

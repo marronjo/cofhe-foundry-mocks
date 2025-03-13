@@ -82,7 +82,8 @@ contract PermissionedUpgradeable is Initializable, EIP712Upgradeable {
     using PermissionUtils for Permission;
 
     function __PermissionedUpgradeable_init() internal onlyInitializing {
-        __EIP712_init_unchained("Fhenix Access Control Permission", "1");
+        __EIP712_init("Fhenix Access Control Permission", "1");
+        __PermissionedUpgradeable_init_unchained();
     }
 
     function __PermissionedUpgradeable_init_unchained()
@@ -147,6 +148,12 @@ contract PermissionedUpgradeable is Initializable, EIP712Upgradeable {
         ) revert PermissionInvalid_Disabled();
 
         _;
+    }
+
+    function hashTypedDataV4(
+        bytes32 structHash
+    ) public view virtual returns (bytes32) {
+        return _hashTypedDataV4(structHash);
     }
 }
 

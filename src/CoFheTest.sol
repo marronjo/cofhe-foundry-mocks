@@ -7,7 +7,8 @@ import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
 import "./FHE.sol";
 import {MockZkVerifier} from "./MockZkVerifier.sol";
-import {ZK_VERIFIER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
+import {MockZkVerifierSigner} from "./MockZkVerifierSigner.sol";
+import {ZK_VERIFIER_ADDRESS, ZK_VERIFIER_SIGNER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {Permission, PermissionUtils} from "./Permissioned.sol";
 import {MockQueryDecrypter} from "./MockQueryDecrypter.sol";
@@ -16,6 +17,7 @@ import {QUERY_DECRYPTER_ADDRESS} from "./addresses/QueryDecrypterAddress.sol";
 contract CoFheTest is Test {
     TaskManager public taskManager;
     MockZkVerifier public zkVerifier;
+    MockZkVerifierSigner public zkVerifierSigner;
     ACL public acl;
     MockQueryDecrypter public queryDecrypter;
 
@@ -42,6 +44,13 @@ contract CoFheTest is Test {
         deployCodeTo("MockZkVerifier.sol:MockZkVerifier", ZK_VERIFIER_ADDRESS);
         zkVerifier = MockZkVerifier(ZK_VERIFIER_ADDRESS);
         vm.label(address(zkVerifier), "MockZkVerifier");
+
+        deployCodeTo(
+            "MockZkVerifierSigner.sol:MockZkVerifierSigner",
+            ZK_VERIFIER_SIGNER_ADDRESS
+        );
+        zkVerifierSigner = MockZkVerifierSigner(ZK_VERIFIER_SIGNER_ADDRESS);
+        vm.label(address(zkVerifierSigner), "MockZkVerifierSigner");
 
         acl = new ACL();
         acl.initialize(TM_ADMIN);
@@ -190,12 +199,20 @@ contract CoFheTest is Test {
         uint256 value,
         int32 securityZone
     ) internal returns (bytes memory) {
+        uint256 chainId = uint256(block.chainid);
+
+        // Create input
         EncryptedInput memory input = zkVerifier.zkVerify(
-            utype,
             value,
+            utype,
             msg.sender,
-            securityZone
+            securityZone,
+            chainId
         );
+
+        // Sign input
+        input = zkVerifierSigner.zkVerifySign(input);
+
         return abi.encode(securityZone, input.hash, utype, input.signature);
     }
 
@@ -391,26 +408,30 @@ contract CoFheTest is Test {
         keccak256(
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
-    bytes32 private constant PERMISSION_NAME_HASH =
-        keccak256("Fhenix Access Control Permission");
-    bytes32 private constant PERMISSION_VERSION_HASH = keccak256("1");
 
     function permissionDomainSeparator() internal view returns (bytes32) {
+        string memory name;
+        string memory version;
+        uint256 chainId;
+        address verifyingContract;
+
+        (, name, version, chainId, verifyingContract, , ) = acl.eip712Domain();
+
         return
             keccak256(
                 abi.encode(
                     PERMISSION_TYPE_HASH,
-                    PERMISSION_NAME_HASH,
-                    PERMISSION_VERSION_HASH,
-                    block.chainid,
-                    address(acl)
+                    keccak256(bytes(name)),
+                    keccak256(bytes(version)),
+                    chainId,
+                    verifyingContract
                 )
             );
     }
 
     function permissionHashTypedDataV4(
         bytes32 structHash
-    ) internal view returns (bytes32) {
+    ) public view returns (bytes32) {
         return
             MessageHashUtils.toTypedDataHash(
                 permissionDomainSeparator(),
