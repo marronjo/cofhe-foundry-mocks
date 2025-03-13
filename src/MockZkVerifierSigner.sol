@@ -8,10 +8,6 @@ import {Test} from "forge-std/Test.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract MockZkVerifierSigner is Test {
-    function test() public view returns (bool) {
-        return true;
-    }
-
     function zkVerifySignPacked(
         EncryptedInput[] memory inputs
     ) public pure returns (EncryptedInput[] memory) {
