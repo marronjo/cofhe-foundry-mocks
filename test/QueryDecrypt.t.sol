@@ -114,6 +114,20 @@ contract QueryDecryptTest is Test {
     }
 
     function test_permission() public {
+        Permission memory permission2 = Permission({
+            issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,
+            expiration: 10000000000,
+            recipient: 0x0000000000000000000000000000000000000000,
+            validatorId: 0,
+            validatorContract: 0x0000000000000000000000000000000000000000,
+            sealingKey: 0xf9f00615e0feb5664eb1b004bfb45f8183875b66a27b01cc0e649e6523e0a5ef,
+            issuerSignature: hex"b95d29fb8b14540957f9b6cee3f21d4f8fe5c05c6604b7662191c52b76a01b214769a2eb52910f2a0c349ce9ae305355622b09664ea9edc7d8e3b32cacbe66411c",
+            recipientSignature: hex""
+        });
+
+        bool isAllowed2 = CFT.acl().isAllowedWithPermission(permission2, 0);
+        console.log("Is Allowed (Permission 2)", isAllowed2);
+
         Permission memory permission = Permission({
             issuer: 0x4e6206fC78674E5eFf48Dcd0166060f95a832c60,
             expiration: 1000000000000,
@@ -130,6 +144,10 @@ contract QueryDecryptTest is Test {
             bytes32(0)
         );
 
+        bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
+
+        console.log("Is Allowed", isAllowed);
+
         console.log(
             "Last Handle",
             uint256(PermissionUtils.issuerHash(permission))
@@ -145,6 +163,7 @@ contract QueryDecryptTest is Test {
             bytes32 salt,
             uint256[] memory extensions
         ) = PermissionedUpgradeable(CFT.acl()).eip712Domain();
+
         console.log("Name", name);
         console.log("Version", version);
         console.log("Chain Id", chainId);

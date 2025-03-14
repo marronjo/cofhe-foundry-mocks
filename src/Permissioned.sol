@@ -82,7 +82,7 @@ contract PermissionedUpgradeable is Initializable, EIP712Upgradeable {
     using PermissionUtils for Permission;
 
     function __PermissionedUpgradeable_init() internal onlyInitializing {
-        __EIP712_init("Fhenix Access Control Permission", "1");
+        __EIP712_init("ACL", "1");
         __PermissionedUpgradeable_init_unchained();
     }
 
