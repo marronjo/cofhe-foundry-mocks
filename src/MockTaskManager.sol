@@ -620,9 +620,9 @@ contract TaskManager is ITaskManager, MockCoFHE {
 
     function isAllowedWithPermission(
         Permission memory permission,
-        address account
+        uint256 ctHash
     ) external returns (bool) {
-        return acl.isAllowedWithPermission(permission, account);
+        return acl.isAllowedWithPermission(permission, ctHash);
     }
 
     function aclEIP712Domain()

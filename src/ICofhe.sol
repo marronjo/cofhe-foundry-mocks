@@ -63,7 +63,7 @@ interface ITaskManager {
     function isAllowed(uint256 ctHash, address account) external returns (bool);
     function isAllowedWithPermission(
         Permission memory permission,
-        address account
+        uint256 ctHash
     ) external returns (bool);
     function aclEIP712Domain()
         external
