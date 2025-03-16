@@ -618,6 +618,29 @@ contract TaskManager is ITaskManager, MockCoFHE {
         return acl.isAllowed(ctHash, account);
     }
 
+    function isAllowedWithPermission(
+        Permission memory permission,
+        address account
+    ) external returns (bool) {
+        return acl.isAllowedWithPermission(permission, account);
+    }
+
+    function aclEIP712Domain()
+        external
+        view
+        returns (
+            bytes1 fields,
+            string memory name,
+            string memory version,
+            uint256 chainId,
+            address verifyingContract,
+            bytes32 salt,
+            uint256[] memory extensions
+        )
+    {
+        return acl.eip712Domain();
+    }
+
     function checkSignature(
         uint256 ctHash,
         uint8 uintType,

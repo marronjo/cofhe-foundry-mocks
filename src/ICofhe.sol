@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.25 <0.9.0;
 
+import {Permission} from "./Permissioned.sol";
+
 // Order is set as in fheos/precompiles/types/types.go
 enum FunctionId {
     _0, // 0 - GetNetworkKey
@@ -59,6 +61,22 @@ interface ITaskManager {
 
     function allow(uint256 ctHash, address account) external;
     function isAllowed(uint256 ctHash, address account) external returns (bool);
+    function isAllowedWithPermission(
+        Permission memory permission,
+        address account
+    ) external returns (bool);
+    function aclEIP712Domain()
+        external
+        view
+        returns (
+            bytes1 fields,
+            string memory name,
+            string memory version,
+            uint256 chainId,
+            address verifyingContract,
+            bytes32 salt,
+            uint256[] memory extensions
+        );
     function allowTransient(uint256 ctHash, address account) external;
     function allowGlobal(uint256 ctHash, address account) external;
 }
