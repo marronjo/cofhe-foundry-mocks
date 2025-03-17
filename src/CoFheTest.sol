@@ -417,6 +417,11 @@ contract CoFheTest is Test {
 
         (, name, version, chainId, verifyingContract, , ) = acl.eip712Domain();
 
+        name = "ACL";
+        version = "1";
+        verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
+        chainId = 420105;
+
         return
             keccak256(
                 abi.encode(

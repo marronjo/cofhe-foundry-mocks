@@ -114,59 +114,70 @@ contract QueryDecryptTest is Test {
     }
 
     function test_permission() public {
-        Permission memory permission2 = Permission({
-            issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,
-            expiration: 10000000000,
-            recipient: 0x0000000000000000000000000000000000000000,
-            validatorId: 0,
-            validatorContract: 0x0000000000000000000000000000000000000000,
-            sealingKey: 0xf9f00615e0feb5664eb1b004bfb45f8183875b66a27b01cc0e649e6523e0a5ef,
-            issuerSignature: hex"b95d29fb8b14540957f9b6cee3f21d4f8fe5c05c6604b7662191c52b76a01b214769a2eb52910f2a0c349ce9ae305355622b09664ea9edc7d8e3b32cacbe66411c",
-            recipientSignature: hex""
-        });
+        Permission memory permission = CFT.createPermissionSelf(bob);
+        bytes32 sealingKey = CFT.createSealingKey(bobPKey);
+        permission.sealingKey = sealingKey;
+        permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        bool isAllowed2 = CFT.acl().isAllowedWithPermission(permission2, 0);
-        console.log("Is Allowed (Permission 2)", isAllowed2);
+        CFT.acl().isAllowedWithPermission(permission, 0);
 
-        Permission memory permission = Permission({
-            issuer: 0x4e6206fC78674E5eFf48Dcd0166060f95a832c60,
-            expiration: 1000000000000,
-            recipient: 0x0000000000000000000000000000000000000000,
-            validatorId: 0,
-            validatorContract: 0x0000000000000000000000000000000000000000,
-            issuerSignature: hex"05d8577c0e922adcf472a885bbb6d18d329b528942034132048f5d1e42c949952aea82ee8e15873d676874ab4f6606d1623f282d52e0683e56efad7ba011bed21c",
-            recipientSignature: hex"",
-            sealingKey: 0x570e3f943655906c103fe71fa3fc15af65e157092e8e5499fc24a826e48c9019
-        });
-
-        bytes32 issuerHash = PermissionUtils.issuerHash(permission);
-        bytes32 structHash = PermissionedUpgradeable(CFT.acl()).hashTypedDataV4(
-            bytes32(0)
-        );
-
-        bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
-
-        console.log("Is Allowed", isAllowed);
-
-        console.log(
-            "Last Handle",
-            uint256(PermissionUtils.issuerHash(permission))
-        );
-        console.log("Struct Hash", uint256(structHash));
-
-        (
-            bytes1 fields,
-            string memory name,
-            string memory version,
-            uint256 chainId,
-            address verifyingContract,
-            bytes32 salt,
-            uint256[] memory extensions
-        ) = PermissionedUpgradeable(CFT.acl()).eip712Domain();
-
-        console.log("Name", name);
-        console.log("Version", version);
-        console.log("Chain Id", chainId);
-        console.log("Verifying Contract", verifyingContract);
+        revert("CUSTOM PERMISSION");
     }
+
+    // function test_permission() public {
+    //     Permission memory permission2 = Permission({
+    //         issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,
+    //         expiration: 10000000000,
+    //         recipient: 0x0000000000000000000000000000000000000000,
+    //         validatorId: 0,
+    //         validatorContract: 0x0000000000000000000000000000000000000000,
+    //         sealingKey: 0xf9f00615e0feb5664eb1b004bfb45f8183875b66a27b01cc0e649e6523e0a5ef,
+    //         issuerSignature: hex"58660975f69cfd530e51550e7b86aec62e81101037ef2ddf4b3d80cdd256eef133816bc95b9e44732f7b97736cae67a71da0a68948699843215f03e951ad972b1b",
+    //         recipientSignature: hex""
+    //     });
+
+    //     bool isAllowed2 = CFT.acl().isAllowedWithPermission(permission2, 0);
+    //     console.log("Is Allowed (Permission 2)", isAllowed2);
+
+    //     Permission memory permission = Permission({
+    //         issuer: 0x4e6206fC78674E5eFf48Dcd0166060f95a832c60,
+    //         expiration: 1000000000000,
+    //         recipient: 0x0000000000000000000000000000000000000000,
+    //         validatorId: 0,
+    //         validatorContract: 0x0000000000000000000000000000000000000000,
+    //         issuerSignature: hex"05d8577c0e922adcf472a885bbb6d18d329b528942034132048f5d1e42c949952aea82ee8e15873d676874ab4f6606d1623f282d52e0683e56efad7ba011bed21c",
+    //         recipientSignature: hex"",
+    //         sealingKey: 0x570e3f943655906c103fe71fa3fc15af65e157092e8e5499fc24a826e48c9019
+    //     });
+
+    //     bytes32 issuerHash = PermissionUtils.issuerHash(permission);
+    //     bytes32 structHash = PermissionedUpgradeable(CFT.acl()).hashTypedDataV4(
+    //         bytes32(0)
+    //     );
+
+    //     bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
+
+    //     console.log("Is Allowed", isAllowed);
+
+    //     console.log(
+    //         "Last Handle",
+    //         uint256(PermissionUtils.issuerHash(permission))
+    //     );
+    //     console.log("Struct Hash", uint256(structHash));
+
+    //     (
+    //         bytes1 fields,
+    //         string memory name,
+    //         string memory version,
+    //         uint256 chainId,
+    //         address verifyingContract,
+    //         bytes32 salt,
+    //         uint256[] memory extensions
+    //     ) = PermissionedUpgradeable(CFT.acl()).eip712Domain();
+
+    //     console.log("Name", name);
+    //     console.log("Version", version);
+    //     console.log("Chain Id", chainId);
+    //     console.log("Verifying Contract", verifyingContract);
+    // }
 }

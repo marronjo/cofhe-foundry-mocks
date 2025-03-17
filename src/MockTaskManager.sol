@@ -621,7 +621,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function isAllowedWithPermission(
         Permission memory permission,
         uint256 ctHash
-    ) external returns (bool) {
+    ) external view returns (bool) {
         return acl.isAllowedWithPermission(permission, ctHash);
     }
 
