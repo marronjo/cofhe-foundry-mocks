@@ -15,8 +15,8 @@
 	},
 	"license": "MIT",
 	"files": [
-		"FHE.sol",
-		"ICofhe.sol"
+		"src/",
+		"tasks/"
 	],
 	"keywords": [
 		"blockchain",

@@ -21,7 +21,7 @@ contract QueryDecryptExample {
         return balances[account];
     }
 
-    function setBalance(inEuint32 memory inAmount) public {
+    function setBalance(InEuint32 memory inAmount) public {
         balances[msg.sender] = FHE.asEuint32(inAmount);
         FHE.allow(balances[msg.sender], msg.sender);
     }
@@ -51,7 +51,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_queryDecrypt_self() public {
-        inEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100);
 
         vm.prank(bob);
         example.setBalance(inAmount);
@@ -69,7 +69,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_queryDecrypt_shared() public {
-        inEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100);
 
         vm.prank(bob);
         example.setBalance(inAmount);
@@ -92,7 +92,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_querySealOutput() public {
-        inEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100);
 
         vm.prank(bob);
         example.setBalance(inAmount);

@@ -55,24 +55,24 @@ Additionally, you now have access to `CFT` which has the following functions (th
 
 ### `CFT.createInE_____` utility
 
-Used to create `inEBool` / `inEuintXX` / `inAddress` to be used as function inputs.
+Used to create `inEBool` / `InEuintXX` / `inAddress` to be used as function inputs.
 
 ```solidity
 // Set number to 5
-inEuint32 memory inNumber = CFT.createInEuint32(5);
+InEuint32 memory inNumber = CFT.createInEuint32(5);
 counter.setNumber(inNumber);
 ```
 
 ### `CFT.assertStoredValue` assertion
 
-- Param 1: An encrypted value (ebool / euint8 ... euint256 / eaddress) or the hash of a value (inEuint32.hash / ebool.unwrap(eBoolVal))
+- Param 1: An encrypted value (ebool / euint8 ... euint256 / eaddress) or the hash of a value (InEuint32.hash / ebool.unwrap(eBoolVal))
 - Param 2: The expected encrypted value
 
 This will revert if the encrypted hash isn't stored, or if the expected value doesn't match.
 
 ```solidity
 function test_setNumber() public {
-    inEuint32 memory inNumber = CFT.createInEuint32(10);
+    InEuint32 memory inNumber = CFT.createInEuint32(10);
     counter.setNumber(inNumber);
     CFT.assertStoredValue(counter.eNumber(), 10);
 }

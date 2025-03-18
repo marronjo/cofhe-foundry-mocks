@@ -6,7 +6,7 @@ import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 contract ExampleFHECounter {
     euint32 public eNumber;
 
-    function setNumber(inEuint32 memory inNumber) public {
+    function setNumber(InEuint32 memory inNumber) public {
         eNumber = FHE.asEuint32(inNumber);
         FHE.allowThis(eNumber);
     }
@@ -16,12 +16,12 @@ contract ExampleFHECounter {
         FHE.allowThis(eNumber);
     }
 
-    function add(inEuint32 memory inNumber) public {
+    function add(InEuint32 memory inNumber) public {
         eNumber = FHE.add(eNumber, FHE.asEuint32(inNumber));
         FHE.allowThis(eNumber);
     }
 
-    function sub(inEuint32 memory inNumber) public {
+    function sub(InEuint32 memory inNumber) public {
         euint32 inAsEuint32 = FHE.asEuint32(inNumber);
         euint32 eSubOrZero = FHE.select(
             FHE.lte(inAsEuint32, eNumber),
@@ -32,7 +32,7 @@ contract ExampleFHECounter {
         FHE.allowThis(eNumber);
     }
 
-    function mul(inEuint32 memory inNumber) public {
+    function mul(InEuint32 memory inNumber) public {
         eNumber = FHE.mul(eNumber, FHE.asEuint32(inNumber));
         FHE.allowThis(eNumber);
     }

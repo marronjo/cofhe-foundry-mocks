@@ -41,7 +41,7 @@ contract MockZkVerifier {
 
     function _appendMetadata(
         uint256 preCtHash,
-        int32 securityZone,
+        uint8 securityZone,
         uint8 uintType,
         bool isTrivial
     ) internal pure returns (uint256 result) {
@@ -64,7 +64,7 @@ contract MockZkVerifier {
     function _calcPlaceholderKey(
         address user,
         uint8 utype,
-        int32 securityZone,
+        uint8 securityZone,
         uint256 input
     ) internal returns (uint256) {
         bytes memory combined = bytes.concat(uint256ToBytes32(input));
@@ -87,7 +87,7 @@ contract MockZkVerifier {
         uint256[] memory values,
         uint8[] memory utypes,
         address user,
-        int32 securityZone,
+        uint8 securityZone,
         uint256 chainId
     ) public returns (EncryptedInput[] memory inputs) {
         if (utypes.length != values.length) {
@@ -111,14 +111,14 @@ contract MockZkVerifier {
         uint256 value,
         uint8 utype,
         address user,
-        int32 securityZone,
+        uint8 securityZone,
         uint256
     ) public returns (EncryptedInput memory) {
         uint256 ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
         TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);
         return
             EncryptedInput({
-                hash: ctHash,
+                ctHash: ctHash,
                 securityZone: securityZone,
                 utype: utype,
                 signature: hex""

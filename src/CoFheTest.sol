@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
-import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
 import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 import {MockZkVerifier} from "./MockZkVerifier.sol";
@@ -55,10 +54,6 @@ contract CoFheTest is Test {
         bytes memory initData = abi.encodeWithSelector(
             ACL.initialize.selector,
             TM_ADMIN
-        );
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(aclImplementation),
-            initData
         );
         deployCodeTo(
             "ERC1967Proxy.sol:ERC1967Proxy",
@@ -229,10 +224,17 @@ contract CoFheTest is Test {
 
     // UTILS
 
+    // struct EncryptedInput {
+    // uint256 ctHash;
+    // uint8 securityZone;
+    // uint8 utype;
+    // bytes signature;
+    // }
+
     function createEncryptedInput(
         uint8 utype,
         uint256 value,
-        int32 securityZone
+        uint8 securityZone
     ) internal returns (bytes memory) {
         uint256 chainId = uint256(block.chainid);
 
@@ -248,21 +250,30 @@ contract CoFheTest is Test {
         // Sign input
         input = zkVerifierSigner.zkVerifySign(input);
 
-        return abi.encode(securityZone, input.hash, utype, input.signature);
+        console.log("Input ctHash: ", input.ctHash);
+
+        EncryptedInput memory input2 = abi.decode(
+            abi.encode(input.ctHash, securityZone, utype, input.signature),
+            (EncryptedInput)
+        );
+
+        console.log("Input2 ctHash: ", input2.ctHash);
+
+        return abi.encode(input.ctHash, securityZone, utype, input.signature);
     }
 
     // Derived functions that use the generic create
 
     /**
-     * @notice              Creates an inEbool to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEbool to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEbool.
+     * @return              InEbool.
      */
     function createInEbool(
         bool value,
-        int32 securityZone
-    ) public returns (inEbool memory) {
+        uint8 securityZone
+    ) public returns (InEbool memory) {
         return
             abi.decode(
                 createEncryptedInput(
@@ -270,122 +281,122 @@ contract CoFheTest is Test {
                     value ? 1 : 0,
                     securityZone
                 ),
-                (inEbool)
+                (InEbool)
             );
     }
 
     /**
-     * @notice              Creates an inEuint8 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint8 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint8.
+     * @return              InEuint8.
      */
     function createInEuint8(
         uint8 value,
-        int32 securityZone
-    ) public returns (inEuint8 memory) {
+        uint8 securityZone
+    ) public returns (InEuint8 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT8_TFHE, value, securityZone),
-                (inEuint8)
+                (InEuint8)
             );
     }
 
     /**
-     * @notice              Creates an inEuint16 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint16 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint16.
+     * @return              InEuint16.
      */
     function createInEuint16(
         uint16 value,
-        int32 securityZone
-    ) public returns (inEuint16 memory) {
+        uint8 securityZone
+    ) public returns (InEuint16 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT16_TFHE, value, securityZone),
-                (inEuint16)
+                (InEuint16)
             );
     }
 
     /**
-     * @notice              Creates an inEuint32 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint32 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint32.
+     * @return              InEuint32.
      */
     function createInEuint32(
         uint32 value,
-        int32 securityZone
-    ) public returns (inEuint32 memory) {
+        uint8 securityZone
+    ) public returns (InEuint32 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT32_TFHE, value, securityZone),
-                (inEuint32)
+                (InEuint32)
             );
     }
 
     /**
-     * @notice              Creates an inEuint64 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint64 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint64.
+     * @return              InEuint64.
      */
     function createInEuint64(
         uint64 value,
-        int32 securityZone
-    ) public returns (inEuint64 memory) {
+        uint8 securityZone
+    ) public returns (InEuint64 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT64_TFHE, value, securityZone),
-                (inEuint64)
+                (InEuint64)
             );
     }
 
     /**
-     * @notice              Creates an inEuint128 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint128 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint128.
+     * @return              InEuint128.
      */
     function createInEuint128(
         uint128 value,
-        int32 securityZone
-    ) public returns (inEuint128 memory) {
+        uint8 securityZone
+    ) public returns (InEuint128 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT128_TFHE, value, securityZone),
-                (inEuint128)
+                (InEuint128)
             );
     }
 
     /**
-     * @notice              Creates an inEuint256 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEuint256 to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEuint256.
+     * @return              InEuint256.
      */
     function createInEuint256(
         uint256 value,
-        int32 securityZone
-    ) public returns (inEuint256 memory) {
+        uint8 securityZone
+    ) public returns (InEuint256 memory) {
         return
             abi.decode(
                 createEncryptedInput(Utils.EUINT256_TFHE, value, securityZone),
-                (inEuint256)
+                (InEuint256)
             );
     }
 
     /**
-     * @notice              Creates an inEaddress to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
+     * @notice              Creates an InEaddress to be used as FHE input. Value is stored in MockCoFHE contract, hash is a pointer to that value.
      * @param value         Value to encrypt.
      * @param securityZone  Security zone of the encrypted value.
-     * @return              inEaddress.
+     * @return              InEaddress.
      */
     function createInEaddress(
         address value,
-        int32 securityZone
-    ) public returns (inEaddress memory) {
+        uint8 securityZone
+    ) public returns (InEaddress memory) {
         return
             abi.decode(
                 createEncryptedInput(
@@ -393,47 +404,47 @@ contract CoFheTest is Test {
                     uint256(uint160(value)),
                     securityZone
                 ),
-                (inEaddress)
+                (InEaddress)
             );
     }
 
     // Overloads with default securityZone=0 for backward compatibility
 
-    function createInEbool(bool value) public returns (inEbool memory) {
+    function createInEbool(bool value) public returns (InEbool memory) {
         return createInEbool(value, 0);
     }
 
-    function createInEuint8(uint8 value) public returns (inEuint8 memory) {
+    function createInEuint8(uint8 value) public returns (InEuint8 memory) {
         return createInEuint8(value, 0);
     }
 
-    function createInEuint16(uint16 value) public returns (inEuint16 memory) {
+    function createInEuint16(uint16 value) public returns (InEuint16 memory) {
         return createInEuint16(value, 0);
     }
 
-    function createInEuint32(uint32 value) public returns (inEuint32 memory) {
+    function createInEuint32(uint32 value) public returns (InEuint32 memory) {
         return createInEuint32(value, 0);
     }
 
-    function createInEuint64(uint64 value) public returns (inEuint64 memory) {
+    function createInEuint64(uint64 value) public returns (InEuint64 memory) {
         return createInEuint64(value, 0);
     }
 
     function createInEuint128(
         uint128 value
-    ) public returns (inEuint128 memory) {
+    ) public returns (InEuint128 memory) {
         return createInEuint128(value, 0);
     }
 
     function createInEuint256(
         uint256 value
-    ) public returns (inEuint256 memory) {
+    ) public returns (InEuint256 memory) {
         return createInEuint256(value, 0);
     }
 
     function createInEaddress(
         address value
-    ) public returns (inEaddress memory) {
+    ) public returns (InEaddress memory) {
         return createInEaddress(value, 0);
     }
 

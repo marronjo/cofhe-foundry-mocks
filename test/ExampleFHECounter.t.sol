@@ -17,12 +17,12 @@ contract ExampleFHECounterTest is Test {
         counter = new ExampleFHECounter();
 
         // Set number to 5
-        inEuint32 memory inNumber = CFT.createInEuint32(5);
+        InEuint32 memory inNumber = CFT.createInEuint32(5);
         counter.setNumber(inNumber);
     }
 
     function test_setNumber() public {
-        inEuint32 memory inNumber = CFT.createInEuint32(10);
+        InEuint32 memory inNumber = CFT.createInEuint32(10);
         counter.setNumber(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }
@@ -33,19 +33,19 @@ contract ExampleFHECounterTest is Test {
     }
 
     function test_add() public {
-        inEuint32 memory inNumber = CFT.createInEuint32(2);
+        InEuint32 memory inNumber = CFT.createInEuint32(2);
         counter.add(inNumber);
         CFT.assertHashValue(counter.eNumber(), 7);
     }
 
     function test_sub() public {
-        inEuint32 memory inNumber = CFT.createInEuint32(3);
+        InEuint32 memory inNumber = CFT.createInEuint32(3);
         counter.sub(inNumber);
         CFT.assertHashValue(counter.eNumber(), 2);
     }
 
     function test_mul() public {
-        inEuint32 memory inNumber = CFT.createInEuint32(2);
+        InEuint32 memory inNumber = CFT.createInEuint32(2);
         counter.mul(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }

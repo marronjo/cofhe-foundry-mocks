@@ -6,8 +6,8 @@ import {CoFheTest} from "../src/CoFheTest.sol";
 import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract SimpleDecrypter {
-    function decrypt(inEuint8 memory inEuint8Value) public {
-        euint8 euint8Value = FHE.asEuint8(inEuint8Value);
+    function decrypt(InEuint8 memory InEuint8Value) public {
+        euint8 euint8Value = FHE.asEuint8(InEuint8Value);
         FHE.decrypt(euint8Value);
     }
 
@@ -32,86 +32,86 @@ contract MockTaskManagerTests is Test {
         thiefDecrypter = new SimpleDecrypter();
     }
 
-    function test_mock_inEuintXX() public {
+    function test_mock_InEuintXX() public {
         {
             bool boolValue = true;
-            inEbool memory inEboolValue = CFT.createInEbool(boolValue);
-            CFT.assertHashValue(inEboolValue.hash, 1);
+            InEbool memory InEboolValue = CFT.createInEbool(boolValue);
+            CFT.assertHashValue(InEboolValue.ctHash, 1);
 
-            ebool eboolValue = FHE.asEbool(inEboolValue);
-            assertEq(inEboolValue.hash, ebool.unwrap(eboolValue));
+            ebool eboolValue = FHE.asEbool(InEboolValue);
+            assertEq(InEboolValue.ctHash, ebool.unwrap(eboolValue));
         }
 
         {
             uint8 uint8Value = 10;
-            inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
-            CFT.assertHashValue(inEuint8Value.hash, uint8Value);
+            InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
+            CFT.assertHashValue(InEuint8Value.ctHash, uint8Value);
 
-            euint8 euint8Value = FHE.asEuint8(inEuint8Value);
-            assertEq(inEuint8Value.hash, euint8.unwrap(euint8Value));
+            euint8 euint8Value = FHE.asEuint8(InEuint8Value);
+            assertEq(InEuint8Value.ctHash, euint8.unwrap(euint8Value));
         }
 
         {
             uint16 uint16Value = 1000;
-            inEuint16 memory inEuint16Value = CFT.createInEuint16(uint16Value);
-            CFT.assertHashValue(inEuint16Value.hash, uint16Value);
+            InEuint16 memory InEuint16Value = CFT.createInEuint16(uint16Value);
+            CFT.assertHashValue(InEuint16Value.ctHash, uint16Value);
 
-            euint16 euint16Value = FHE.asEuint16(inEuint16Value);
-            assertEq(inEuint16Value.hash, euint16.unwrap(euint16Value));
+            euint16 euint16Value = FHE.asEuint16(InEuint16Value);
+            assertEq(InEuint16Value.ctHash, euint16.unwrap(euint16Value));
         }
 
         {
             uint32 uint32Value = 1000000;
-            inEuint32 memory inEuint32Value = CFT.createInEuint32(uint32Value);
-            CFT.assertHashValue(inEuint32Value.hash, uint32Value);
+            InEuint32 memory InEuint32Value = CFT.createInEuint32(uint32Value);
+            CFT.assertHashValue(InEuint32Value.ctHash, uint32Value);
 
-            euint32 euint32Value = FHE.asEuint32(inEuint32Value);
-            assertEq(inEuint32Value.hash, euint32.unwrap(euint32Value));
+            euint32 euint32Value = FHE.asEuint32(InEuint32Value);
+            assertEq(InEuint32Value.ctHash, euint32.unwrap(euint32Value));
         }
 
         {
             uint64 uint64Value = 1000000000;
-            inEuint64 memory inEuint64Value = CFT.createInEuint64(uint64Value);
-            CFT.assertHashValue(inEuint64Value.hash, uint64Value);
+            InEuint64 memory InEuint64Value = CFT.createInEuint64(uint64Value);
+            CFT.assertHashValue(InEuint64Value.ctHash, uint64Value);
 
-            euint64 euint64Value = FHE.asEuint64(inEuint64Value);
-            assertEq(inEuint64Value.hash, euint64.unwrap(euint64Value));
+            euint64 euint64Value = FHE.asEuint64(InEuint64Value);
+            assertEq(InEuint64Value.ctHash, euint64.unwrap(euint64Value));
         }
 
         {
             uint128 uint128Value = 1000000000000;
-            inEuint128 memory inEuint128Value = CFT.createInEuint128(
+            InEuint128 memory InEuint128Value = CFT.createInEuint128(
                 uint128Value
             );
-            CFT.assertHashValue(inEuint128Value.hash, uint128Value);
+            CFT.assertHashValue(InEuint128Value.ctHash, uint128Value);
 
-            euint128 euint128Value = FHE.asEuint128(inEuint128Value);
-            assertEq(inEuint128Value.hash, euint128.unwrap(euint128Value));
+            euint128 euint128Value = FHE.asEuint128(InEuint128Value);
+            assertEq(InEuint128Value.ctHash, euint128.unwrap(euint128Value));
         }
 
         {
             uint256 uint256Value = 1000000000000000;
-            inEuint256 memory inEuint256Value = CFT.createInEuint256(
+            InEuint256 memory InEuint256Value = CFT.createInEuint256(
                 uint256Value
             );
-            CFT.assertHashValue(inEuint256Value.hash, uint256Value);
+            CFT.assertHashValue(InEuint256Value.ctHash, uint256Value);
 
-            euint256 euint256Value = FHE.asEuint256(inEuint256Value);
-            assertEq(inEuint256Value.hash, euint256.unwrap(euint256Value));
+            euint256 euint256Value = FHE.asEuint256(InEuint256Value);
+            assertEq(InEuint256Value.ctHash, euint256.unwrap(euint256Value));
         }
 
         {
             address addressValue = 0x888888CfAebbEd5554c3F36BfBD233f822e9455f;
-            inEaddress memory inEaddressValue = CFT.createInEaddress(
+            InEaddress memory InEaddressValue = CFT.createInEaddress(
                 addressValue
             );
             CFT.assertHashValue(
-                inEaddressValue.hash,
+                InEaddressValue.ctHash,
                 uint256(uint160(addressValue))
             );
 
-            eaddress eaddressValue = FHE.asEaddress(inEaddressValue);
-            assertEq(inEaddressValue.hash, eaddress.unwrap(eaddressValue));
+            eaddress eaddressValue = FHE.asEaddress(InEaddressValue);
+            assertEq(InEaddressValue.ctHash, eaddress.unwrap(eaddressValue));
         }
     }
 
@@ -283,14 +283,14 @@ contract MockTaskManagerTests is Test {
 
         uint8 uint8Value = 10;
         vm.prank(address(userAddress));
-        inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
+        InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
 
         vm.prank(address(userAddress));
-        simpleDecrypter.decrypt(inEuint8Value);
+        simpleDecrypter.decrypt(InEuint8Value);
 
         // In mocks, this happens synchronously
         vm.warp(block.timestamp + 11);
-        uint256 result = simpleDecrypter.getDecryptResult(inEuint8Value.hash);
+        uint256 result = simpleDecrypter.getDecryptResult(InEuint8Value.ctHash);
 
         assertEq(result, uint8Value);
     }
@@ -302,17 +302,17 @@ contract MockTaskManagerTests is Test {
 
         uint8 uint8Value = 10;
         vm.prank(address(userAddress));
-        inEuint8 memory inEuint8Value = CFT.createInEuint8(uint8Value);
+        InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
 
         vm.prank(address(userAddress));
-        euint8 euint8Value = FHE.asEuint8(inEuint8Value);
+        euint8 euint8Value = FHE.asEuint8(InEuint8Value);
 
         // Decrypt reverts (not allowed yet)
 
         vm.expectRevert(
             abi.encodeWithSelector(
                 ACLNotAllowed.selector,
-                inEuint8Value.hash,
+                InEuint8Value.ctHash,
                 address(thiefDecrypter)
             )
         );
@@ -330,7 +330,7 @@ contract MockTaskManagerTests is Test {
 
         vm.warp(block.timestamp + 11);
         assertEq(
-            thiefDecrypter.getDecryptResult(inEuint8Value.hash),
+            thiefDecrypter.getDecryptResult(InEuint8Value.ctHash),
             uint8Value
         );
     }

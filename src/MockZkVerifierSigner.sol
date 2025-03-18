@@ -25,7 +25,7 @@ contract MockZkVerifierSigner is Test {
     ) public pure returns (EncryptedInput memory) {
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(
             keccak256(
-                abi.encodePacked(input.hash, input.securityZone, input.utype)
+                abi.encodePacked(input.ctHash, input.securityZone, input.utype)
             )
         );
 
