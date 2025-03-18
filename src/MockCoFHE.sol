@@ -85,30 +85,6 @@ abstract contract MockCoFHE {
         _set(ctHash, value);
     }
 
-    error InvalidInEuintSignature();
-    function MOCK_verifyInEuintSignature(
-        uint256 hash,
-        int32 securityZone,
-        uint8 utype,
-        bytes memory signature
-    ) public view {
-        address recovered = ECDSA.recover(
-            MessageHashUtils.toEthSignedMessageHash(
-                keccak256(abi.encodePacked(hash, securityZone, utype))
-            ),
-            signature
-        );
-
-        if (logOps)
-            console.log(
-                "MOCK_verifyInEuintSignature",
-                hash,
-                "valid?:",
-                recovered == SIGNER_ADDRESS
-            );
-        if (recovered != SIGNER_ADDRESS) revert InvalidInEuintSignature();
-    }
-
     // Mock functions
 
     function MOCK_verifyKeyInStorage(uint256 ctHash) internal view {
