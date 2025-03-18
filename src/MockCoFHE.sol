@@ -1,21 +1,14 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity >=0.8.25 <0.9.0;
 
-import {Utils, FunctionId} from "./ICofhe.sol";
 import {console} from "forge-std/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "./FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 address constant SIGNER_ADDRESS = 0x6E12D8C87503D4287c294f2Fdef96ACd9DFf6bd2;
 uint256 constant SIGNER_PRIVATE_KEY = 49099792800763675079532137679706322989817545357788440619111868498148356080914;
-struct EncryptedInput {
-    uint256 hash;
-    int32 securityZone;
-    uint8 utype;
-    bytes signature;
-}
 
 /**
  * @dev Mock implementation of the CoFHE contract, used to test FHE ops in isolation.

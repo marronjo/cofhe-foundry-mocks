@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 import {ExampleFHECounter} from "./ExampleFHECounter.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
-import {FHE, euint32, inEuint32} from "../src/FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract ExampleFHECounterTest is Test {
     CoFheTest CFT;

@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
-import "./FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 import {MockZkVerifier} from "./MockZkVerifier.sol";
 import {MockZkVerifierSigner} from "./MockZkVerifierSigner.sol";
 import {ZK_VERIFIER_ADDRESS, ZK_VERIFIER_SIGNER_ADDRESS} from "./addresses/ZkVerifierAddress.sol";
@@ -22,6 +22,8 @@ contract CoFheTest is Test {
     ACL public acl;
     MockQueryDecrypter public queryDecrypter;
 
+    address public ACL_ADDRESS = 0x76d57191A9769A88a041FeeADc53AaE6EB663B83;
+
     bool private _log;
 
     address public constant TM_ADMIN = address(128);
@@ -34,6 +36,9 @@ contract CoFheTest is Test {
     // SETUP
 
     function etchFhenixMocks() internal {
+        // Override chain id (uncomment to enable)
+        vm.chainId(421614);
+
         // TASK MANAGER
 
         deployCodeTo("MockTaskManager.sol:TaskManager", TASK_MANAGER_ADDRESS);
@@ -55,14 +60,19 @@ contract CoFheTest is Test {
             address(aclImplementation),
             initData
         );
-        acl = ACL(address(proxy));
+        deployCodeTo(
+            "ERC1967Proxy.sol:ERC1967Proxy",
+            abi.encode(address(aclImplementation), initData),
+            ACL_ADDRESS
+        );
+        acl = ACL(ACL_ADDRESS);
         vm.label(address(acl), "ACL");
 
-        console.log("ACL deployed to: ", address(acl));
-        console.log(
-            "ACL implementation deployed to: ",
-            address(aclImplementation)
-        );
+        // console.log("ACL deployed to: ", address(acl));
+        // console.log(
+        //     "ACL implementation deployed to: ",
+        //     address(aclImplementation)
+        // );
 
         vm.prank(TM_ADMIN);
         taskManager.setACLContract(address(acl));
@@ -446,6 +456,11 @@ contract CoFheTest is Test {
         // version = "1";
         // verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
         // chainId = 420105;
+
+        console.log("Domain Name: ", name);
+        console.log("Domain Version: ", version);
+        console.log("Domain ChainId: ", chainId);
+        console.log("Domain Verifying Contract: ", verifyingContract);
 
         // console.log("verifyingContract: ", verifyingContract);
 

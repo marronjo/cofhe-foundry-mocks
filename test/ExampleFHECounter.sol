@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {FHE, euint32, inEuint32} from "../src/FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract ExampleFHECounter {
     euint32 public eNumber;

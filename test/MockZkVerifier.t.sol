@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
 import {EncryptedInput} from "../src/MockCoFHE.sol";
-import "../src/FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract MockZkVerifierTests is Test {
     CoFheTest CFT;

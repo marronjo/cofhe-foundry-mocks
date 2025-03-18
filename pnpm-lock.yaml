@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@fhenixprotocol/cofhe-contracts':
+        specifier: 0.0.13
+        version: 0.0.13
       '@openzeppelin/contracts':
         specifier: ^5.0.0
         version: 5.2.0
-      axios:
-        specifier: ^1.8.3
-        version: 1.8.3
+      '@openzeppelin/contracts-upgradeable':
+        specifier: ^5.0.0
+        version: 5.2.0(@openzeppelin/contracts@5.2.0)
+      forge-std:
+        specifier: github:foundry-rs/forge-std
+        version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477
     devDependencies:
       '@nomicfoundation/hardhat-ethers':
         specifier: ^3.0.8
@@ -24,6 +30,9 @@ importers:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
         version: 5.0.0(ibpa6ofquyfqxsq7wak67vymse)
+      axios:
+        specifier: ^1.8.3
+        version: 1.8.3
       ethers:
         specifier: ^6.13.5
         version: 6.13.5
@@ -145,6 +154,9 @@ packages:
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
+
+  '@fhenixprotocol/cofhe-contracts@0.0.13':
+    resolution: {integrity: sha512-+lHo5v52fR7QfQj2ottDw4F/AqZg6obPBRqvK576SJatX3o4aH6ZSt2kxNb5kT8Ckthjw6FoNmLdUVCDpP400w==}
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -357,6 +369,11 @@ packages:
   '@nomicfoundation/solidity-analyzer@0.1.2':
     resolution: {integrity: sha512-q4n32/FNKIhQ3zQGGw5CvPF6GTvDCpYwIf7bEY/dZTZbgfDsHyjJwURxUJf3VQuuJj+fDIFl4+KkBVbw4Ef6jA==}
     engines: {node: '>= 12'}
+
+  '@openzeppelin/contracts-upgradeable@5.2.0':
+    resolution: {integrity: sha512-mZIu9oa4tQTlGiOJHk6D3LdJlqFqF6oNOSn6S6UVJtzfs9UsY9/dhMEbAVTwElxUtJnjpf6yA062+oBp+eOyPg==}
+    peerDependencies:
+      '@openzeppelin/contracts': 5.2.0
 
   '@openzeppelin/contracts@5.2.0':
     resolution: {integrity: sha512-bxjNie5z89W1Ea0NZLZluFh8PrFNn9DH8DQlujEok2yjsOlraUPKID5p1Wk3qdNbf6XkQ1Os2RvfiHrrXLHWKA==}
@@ -1028,6 +1045,10 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477:
+    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477}
+    version: 1.9.6
 
   form-data@2.5.3:
     resolution: {integrity: sha512-XHIrMD0NpDrNM/Ckf7XJiBbLl57KEhT3+i3yY+eWm+cqYZJQTZrKo8Y8AWKnuV5GT4scfuUGt9LzNoIx3dU1nQ==}
@@ -2369,6 +2390,10 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
+  '@fhenixprotocol/cofhe-contracts@0.0.13':
+    dependencies:
+      '@openzeppelin/contracts': 5.2.0
+
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
@@ -2598,6 +2623,10 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-gnu': 0.1.2
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
+
+  '@openzeppelin/contracts-upgradeable@5.2.0(@openzeppelin/contracts@5.2.0)':
+    dependencies:
+      '@openzeppelin/contracts': 5.2.0
 
   '@openzeppelin/contracts@5.2.0': {}
 
@@ -3376,6 +3405,8 @@ snapshots:
   follow-redirects@1.15.9(debug@4.4.0):
     optionalDependencies:
       debug: 4.4.0(supports-color@8.1.1)
+
+  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/8ba9031ffcbe25aa0d1224d3ca263a995026e477: {}
 
   form-data@2.5.3:
     dependencies:

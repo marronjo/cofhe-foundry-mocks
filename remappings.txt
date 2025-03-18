@@ -1,4 +1,4 @@
-forge-std/=lib/forge-std/src/
-@openzeppelin/contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
-@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
-@fhenixprotocol/cofhe-contracts/=lib/cofhe-contracts/contracts/
+forge-std/=node_modules/forge-std/src/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/
+@fhenixprotocol/cofhe-contracts/=node_modules/@fhenixprotocol/cofhe-contracts/

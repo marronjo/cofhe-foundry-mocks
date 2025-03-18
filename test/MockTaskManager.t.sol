@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
-import "../src/FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract SimpleDecrypter {
     function decrypt(inEuint8 memory inEuint8Value) public {

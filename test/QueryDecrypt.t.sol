@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 import {ExampleFHECounter} from "./ExampleFHECounter.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
-import {FHE, euint32, inEuint32} from "../src/FHE.sol";
+import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 import {PermissionedUpgradeable, Permission, PermissionUtils} from "../src/Permissioned.sol";
 
 interface IIsAllowedWithPermission {
@@ -121,7 +121,19 @@ contract QueryDecryptTest is Test {
 
         CFT.acl().isAllowedWithPermission(permission, 0);
 
-        revert("CUSTOM PERMISSION");
+        permission = Permission({
+            issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,
+            expiration: 10000000000,
+            recipient: 0x0000000000000000000000000000000000000000,
+            validatorId: 0,
+            validatorContract: 0x0000000000000000000000000000000000000000,
+            sealingKey: 0xf9f00615e0feb5664eb1b004bfb45f8183875b66a27b01cc0e649e6523e0a5ef,
+            issuerSignature: hex"e0620e32f4e0900423ed3ae24becdf7a8c4e7f1eddc3b2341c632bec05023d97799ea8f2dfd5321c23b3bfc7777f9061fd9a10532577764c9f755ec34d89c2271c",
+            recipientSignature: hex""
+        });
+
+        bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
+        console.log("Is Allowed", isAllowed);
     }
 
     // function test_permission() public {
