@@ -1,67 +1,48 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
-
+/* solhint-disable one-contract-per-file */
 pragma solidity >=0.8.25 <0.9.0;
-import "./ACL.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+
+import {console} from "forge-std/console.sol";
+import {ACL, Permission} from "./ACL.sol";
+// import {PlaintextsStorage} from "./PlaintextsStorage.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MockCoFHE} from "./MockCoFHE.sol";
-import {ITaskManager, FunctionId, Utils} from "./ICofhe.sol";
+import {ITaskManager, FunctionId, Utils, EncryptedInput} from "@fhenixprotocol/cofhe-contracts/ICofhe.sol";
 
-// Define an enum to represent the status of a key
-enum KeyStatus {
-    None,
-    Valid,
-    Error
-}
-
-struct KeyParams {
-    bool isTriviallyEncrypted;
-    int32 securityZone;
-    uint8 uintType;
-    KeyStatus status;
-}
-
-struct CiphertextKey {
-    bool isTriviallyEncrypted;
-    uint8 uintType;
-    int32 securityZone;
-    uint256 hash;
-}
-
+error DecryptionResultNotReady(uint256 ctHash);
 // Input validation errors
 error InvalidInputsAmount(string operation, uint256 got, uint256 expected);
 error InvalidOperationInputs(string operation);
 error TooManyInputs(string operation, uint256 got, uint256 maxAllowed);
 error InvalidBytesLength(uint256 got, uint256 expected);
-
 // Type and security validation errors
 error InvalidTypeOrSecurityZone(string operation);
 error InvalidInputType(uint8 actual, uint8 expected);
+error InvalidInputForFunction(string functionName, uint8 inputType);
 error InvalidSecurityZone(int32 zone, int32 min, int32 max);
-error InvalidSignature(uint256 ctHash);
+error InvalidSignature();
+error InvalidSigner(address signer, address expectedSigner);
 
 // Access control errors
 error InvalidAddress();
-error OnlyAdminAllowed(address caller);
+error OnlyOwnerAllowed(address caller);
 error OnlyAggregatorAllowed(address caller);
 
 // Operation-specific errors
 error RandomFunctionNotSupported();
 
 library TMCommon {
-    uint256 constant hashMaskForMetadata = type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
-    uint256 constant securityZoneMask = type(uint8).max; // 0xff -  1 bytes reserved for security zone
-    uint256 constant uintTypeMask = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
-    uint256 constant triviallyEncryptedMask = type(uint8).max - uintTypeMask; //0x80  1 bit reserved for isTriviallyEncrypted
-    uint256 constant shiftedTypeMask = uintTypeMask << 8; // 0x7f007 bits reserved for uint type in the one before last byte
-
-    // Helper function for bytesToHexString
-    function byteToChar(uint8 value) internal pure returns (bytes1) {
-        if (value < 10) {
-            return bytes1(uint8(48 + value)); // 0-9
-        } else {
-            return bytes1(uint8(87 + value)); // a-f
-        }
-    }
+    uint256 private constant HASH_MASK_FOR_METADATA =
+        type(uint256).max - type(uint16).max; // 2 bytes reserved for metadata
+    uint256 private constant SECURITY_ZONE_MASK = type(uint8).max; // 0xff -  1 bytes reserved for security zone
+    uint256 private constant UINT_TYPE_MASK = (type(uint8).max >> 1); // 0x7f - 7 bits reserved for uint type in the one before last byte
+    uint256 private constant TRIVIALLY_ENCRYPTED_MASK =
+        type(uint8).max - UINT_TYPE_MASK; //0x80  1 bit reserved for isTriviallyEncrypted
+    uint256 private constant SHIFTED_TYPE_MASK = UINT_TYPE_MASK << 8; // 0x7f007 bits reserved for uint type in the one before last byte
 
     function uint256ToBytes32(
         uint256 value
@@ -80,7 +61,7 @@ library TMCommon {
         uint256[] memory inputs = new uint256[](
             encryptedHashes.length + extraInputs.length
         );
-        uint i = 0;
+        uint8 i = 0;
         for (; i < encryptedHashes.length; i++) {
             inputs[i] = encryptedHashes[i];
         }
@@ -89,27 +70,6 @@ library TMCommon {
         }
 
         return inputs;
-    }
-
-    function getOnlyHashes(
-        CiphertextKey[] memory inputs
-    ) internal pure returns (uint256[] memory) {
-        uint256[] memory hashes = new uint256[](inputs.length);
-        for (uint i = 0; i < inputs.length; i++) {
-            hashes[i] = inputs[i].hash;
-        }
-        return hashes;
-    }
-
-    function bytesToUint256(bytes memory b) internal pure returns (uint256) {
-        if (b.length != 32) {
-            revert InvalidBytesLength(b.length, 32);
-        }
-        uint256 result;
-        assembly {
-            result := mload(add(b, 32))
-        }
-        return result;
     }
 
     function getReturnType(
@@ -142,7 +102,7 @@ library TMCommon {
     ) internal pure returns (uint256) {
         bytes memory combined;
         bool isTriviallyEncrypted = (functionId == FunctionId.trivialEncrypt);
-        for (uint i = 0; i < inputs.length; i++) {
+        for (uint8 i = 0; i < inputs.length; i++) {
             combined = bytes.concat(combined, uint256ToBytes32(inputs[i]));
         }
 
@@ -159,7 +119,7 @@ library TMCommon {
         bytes32 hash = keccak256(combined);
 
         return
-            _appendMetadata(
+            appendMetadata(
                 uint256(hash),
                 securityZone,
                 getReturnType(functionId, ctType),
@@ -176,24 +136,21 @@ library TMCommon {
 
         return
             uint256(
-                ((isTrivial ? triviallyEncryptedMask : 0x00) |
-                    (uintType & uintTypeMask))
+                ((isTrivial ? TRIVIALLY_ENCRYPTED_MASK : 0x00) |
+                    (uintType & UINT_TYPE_MASK))
             );
     }
 
     /**
-     * @dev ctHash format for user inputs is: TBD
-     *      todo (eshel) add chain.id to the hash once decided
-     *      fhe ops results format is: keccak256(operands_list, op)[0:29] || is_trivial (1 bit) & ct_type (7 bit) || securityZone || ct_version
-     *      The CiphertextFHEList actually contains: 1 byte (= N) for size of handles_list, N bytes for the handles_types : 1 per handle, then the original fhe160list raw ciphertext
+     *      Results format is: keccak256(operands_list, op)[0:29] || is_trivial (1 bit) & ct_type (7 bit) || securityZone || ct_version
      */
-    function _appendMetadata(
+    function appendMetadata(
         uint256 preCtHash,
         int32 securityZone,
         uint8 uintType,
         bool isTrivial
     ) internal pure returns (uint256 result) {
-        result = preCtHash & hashMaskForMetadata;
+        result = preCtHash & HASH_MASK_FOR_METADATA;
         uint256 metadata = (getByteForTrivialAndType(isTrivial, uintType) <<
             8) | (uint256(uint8(int8(securityZone)))); /// @dev 8 bits for type, 8 bits for securityZone
         result = result | metadata;
@@ -202,38 +159,71 @@ library TMCommon {
     function getSecurityZoneFromHash(
         uint256 hash
     ) internal pure returns (int32) {
-        return int32(int8(uint8(hash & securityZoneMask)));
+        return int32(int8(uint8(hash & SECURITY_ZONE_MASK)));
     }
 
     function getUintTypeFromHash(uint256 hash) internal pure returns (uint8) {
-        return uint8(hash & shiftedTypeMask);
+        return uint8((hash & SHIFTED_TYPE_MASK) >> 8);
     }
 
     function getSecAndTypeFromHash(
         uint256 hash
     ) internal pure returns (uint256) {
-        return uint256((shiftedTypeMask | securityZoneMask) & hash);
+        return uint256((SHIFTED_TYPE_MASK | SECURITY_ZONE_MASK) & hash);
     }
     function isTriviallyEncryptedFromHash(
         uint256 hash
     ) internal pure returns (bool) {
-        return (hash & triviallyEncryptedMask) == triviallyEncryptedMask;
+        return (hash & TRIVIALLY_ENCRYPTED_MASK) == TRIVIALLY_ENCRYPTED_MASK;
     }
 }
 
-contract TaskManager is ITaskManager, MockCoFHE {
+contract TaskManager is
+    ITaskManager,
+    Initializable,
+    UUPSUpgradeable,
+    Ownable2StepUpgradeable,
+    MockCoFHE
+{
+    bool private initialized;
+
+    // NOTE: MOCK PLAINTEXTS STORAGE
     mapping(uint256 ctHash => uint256) private _decryptResult;
     mapping(uint256 ctHash => bool) private _decryptResultReady;
-
-    // NOTE: MOCK
     mapping(uint256 ctHash => uint64) private _decryptResultReadyTimestamp;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
+     * @notice              Initializes the contract.
+     * @param initialOwner  Initial owner address.
+     */
+    function initialize(address initialOwner) public initializer {
+        __Ownable_init(initialOwner);
+        __UUPSUpgradeable_init();
+        initialized = true;
+        verifierSigner = address(0);
+    }
+
+    function setSecurityZones(int32 minSZ, int32 maxSZ) external onlyOwner {
+        securityZoneMin = minSZ;
+        securityZoneMax = maxSZ;
+    }
+
+    function isInitialized() public view returns (bool) {
+        return initialized;
+    }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     // Errors
     // Returned when the handle is not allowed in the ACL for the account.
     error ACLNotAllowed(uint256 handle, address account);
-
-    // Returned when the decrypt result is not ready
-    error DecryptResultNotReady(uint256 ctHash);
 
     // Events
     event TaskCreated(
@@ -243,15 +233,15 @@ contract TaskManager is ITaskManager, MockCoFHE {
         uint256 input2,
         uint256 input3
     );
-    event DecryptRequest(
-        uint256 ctHash,
-        address callbackAddress,
-        address requestor
-    );
     event ProtocolNotification(
         uint256 ctHash,
         string operation,
         string errorMessage
+    );
+    event DecryptionResult(
+        uint256 ctHash,
+        uint256 result,
+        address indexed requestor
     );
 
     struct Task {
@@ -264,34 +254,22 @@ contract TaskManager is ITaskManager, MockCoFHE {
     int32 private securityZoneMax;
     int32 private securityZoneMin;
 
-    // Address of the admin (deployer)
-    address public admin;
-
     // Address of the aggregator
     address public aggregator;
 
     // Access-Control contract
     ACL public acl;
 
-    // Modifier to restrict access to the admin only
-    modifier onlyAdmin() {
-        if (msg.sender != admin) {
-            revert OnlyAdminAllowed(msg.sender);
-        }
-        _;
-    }
+    address private verifierSigner;
+
+    // Storage contract for plaintext results of decrypt operations
+    // PlaintextsStorage public plaintextsStorage;
 
     modifier onlyAggregator() {
         if (msg.sender != aggregator) {
             revert OnlyAggregatorAllowed(msg.sender);
         }
         _;
-    }
-
-    function initialize(address _admin, int32 minSZ, int32 maxSZ) external {
-        admin = _admin;
-        securityZoneMin = minSZ;
-        securityZoneMax = maxSZ;
     }
 
     function exists() public view returns (bool) {
@@ -335,7 +313,20 @@ contract TaskManager is ITaskManager, MockCoFHE {
 
     function createDecryptTask(uint256 ctHash, address requestor) public {
         checkAllowed(ctHash);
-        emit DecryptRequest(ctHash, msg.sender, requestor);
+
+        // NOTE: MOCK COMMENTED
+        // (uint256 result, bool hasResult) = plaintextsStorage.getResult(ctHash);
+        // if (hasResult) {
+        //     emit DecryptionResult(ctHash, result, requestor);
+        // } else {
+        //     uint256[] memory inputs = new uint256[](1);
+        //     inputs[0] = uint256(uint160(requestor));
+        //     sendEventCreated(
+        //         ctHash,
+        //         Utils.functionIdToString(FunctionId.decrypt),
+        //         inputs
+        //     );
+        // }
 
         // NOTE: MOCK
         _decryptResultReady[ctHash] = true;
@@ -349,7 +340,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
 
     function getDecryptResult(uint256 ctHash) public view returns (uint256) {
         (uint256 result, bool decrypted) = getDecryptResultSafe(ctHash);
-        if (!decrypted) revert DecryptResultNotReady(ctHash);
+        if (!decrypted) revert DecryptionResultNotReady(ctHash);
         return result;
     }
 
@@ -409,8 +400,63 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function validateEncryptedHashes(
         uint256[] memory encryptedHashes
     ) internal view {
-        for (uint i = 0; i < encryptedHashes.length; i++) {
+        for (uint8 i = 0; i < encryptedHashes.length; i++) {
             checkAllowed(encryptedHashes[i]);
+        }
+    }
+
+    // Verifies if a function is a function that supports all types (including select for ifTrue, ifFalse)
+    function isAllTypesFunction(
+        FunctionId funcId
+    ) internal pure returns (bool) {
+        return
+            funcId == FunctionId.select ||
+            funcId == FunctionId.eq ||
+            funcId == FunctionId.ne ||
+            funcId == FunctionId.cast;
+    }
+
+    // Verifies if a function is receives ONLY boolean or numeral inputs
+    function isBooleanAndNumeralFunction(
+        FunctionId funcId
+    ) internal pure returns (bool) {
+        return
+            funcId == FunctionId.xor ||
+            funcId == FunctionId.and ||
+            funcId == FunctionId.or ||
+            funcId == FunctionId.not;
+    }
+
+    function validateFunctionInputTypes(
+        FunctionId funcId,
+        string memory functionName,
+        uint256[] memory inputs
+    ) internal pure {
+        if (isAllTypesFunction(funcId)) {
+            return;
+        }
+
+        if (isBooleanAndNumeralFunction(funcId)) {
+            for (uint8 i = 0; i < inputs.length; i++) {
+                uint8 inputType = TMCommon.getUintTypeFromHash(inputs[i]);
+                if ((inputType ^ Utils.EADDRESS_TFHE) == 0) {
+                    revert InvalidInputForFunction(
+                        functionName,
+                        Utils.EADDRESS_TFHE
+                    );
+                }
+            }
+        } else {
+            // In this case we expect a function that only work with numbers
+            for (uint8 i = 0; i < inputs.length; i++) {
+                uint8 inputType = TMCommon.getUintTypeFromHash(inputs[i]);
+                if (
+                    (inputType ^ Utils.EADDRESS_TFHE) == 0 ||
+                    (inputType ^ Utils.EBOOL_TFHE) == 0
+                ) {
+                    revert InvalidInputForFunction(functionName, inputType);
+                }
+            }
         }
     }
 
@@ -467,6 +513,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
             );
         }
         validateEncryptedHashes(encryptedHashes);
+        validateFunctionInputTypes(funcId, functionName, encryptedHashes);
     }
 
     function validateSelectInputs(
@@ -527,7 +574,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
             funcId
         );
 
-        acl.allowTransient(ctHash, msg.sender);
+        acl.allowTransient(ctHash, msg.sender, address(this));
         sendEventCreated(ctHash, Utils.functionIdToString(funcId), inputs);
 
         return ctHash;
@@ -536,11 +583,13 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function handleDecryptResult(
         uint256 ctHash,
         uint256 result,
-        address,
-        address
+        address[] calldata requestors
     ) external onlyAggregator {
-        // This call can be very expensive
-        // TODO : Consider using allowance for gas fees and ask the user to pay for it
+        // plaintextsStorage.storeResult(ctHash, result);
+        // for (uint8 i = 0; i < requestors.length; i++) {
+        //     emit DecryptionResult(ctHash, result, requestors[i]);
+        // }
+
         _decryptResultReady[ctHash] = true;
         _decryptResult[ctHash] = result;
         _decryptResultReadyTimestamp[ctHash] = uint64(block.timestamp);
@@ -560,29 +609,38 @@ contract TaskManager is ITaskManager, MockCoFHE {
         }
     }
 
-    function verifyKey(
-        uint256 ctHash,
-        uint8 uintType,
-        int32 securityZone,
-        bytes memory signature,
-        uint8 desiredType
-    ) external {
-        verifyType(uintType, desiredType);
-        if (!isValidSecurityZone(securityZone)) {
-            revert InvalidSecurityZone(
-                securityZone,
-                securityZoneMin,
-                securityZoneMax
-            );
-        }
-        if (!checkSignature(ctHash, uintType, securityZone, signature)) {
-            revert InvalidSignature(ctHash);
+    function verifyInput(
+        EncryptedInput memory input,
+        address sender
+    ) external returns (uint256) {
+        int32 securityZone = int32(uint32(input.securityZone));
+
+        // When signer is set to 0 address we skip this logic to be able to support debug use cases.
+        // In debug use cases we assume that the verifier is not necessarily running.
+        if (verifierSigner != address(0)) {
+            if (!isValidSecurityZone(securityZone)) {
+                revert InvalidSecurityZone(
+                    securityZone,
+                    securityZoneMin,
+                    securityZoneMax
+                );
+            }
+
+            address signer = extractSigner(input, sender);
+            if (signer != verifierSigner) {
+                revert InvalidSigner(signer, verifierSigner);
+            }
         }
 
-        acl.allowTransient(ctHash, msg.sender);
+        uint256 appendedHash = TMCommon.appendMetadata(
+            input.ctHash,
+            securityZone,
+            input.utype,
+            false
+        );
 
-        // NOTE: MOCK
-        MOCK_verifyKeyInStorage(ctHash);
+        acl.allowTransient(appendedHash, msg.sender, address(this));
+        return appendedHash;
     }
 
     function allow(uint256 ctHash, address account) external {
@@ -591,9 +649,9 @@ contract TaskManager is ITaskManager, MockCoFHE {
         }
     }
 
-    function allowGlobal(uint256 ctHash, address account) external {
+    function allowGlobal(uint256 ctHash) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
-            acl.allowGlobal(ctHash, account);
+            acl.allowGlobal(ctHash, msg.sender);
         }
     }
 
@@ -621,47 +679,36 @@ contract TaskManager is ITaskManager, MockCoFHE {
         return acl.isAllowed(ctHash, account);
     }
 
-    function isAllowedWithPermission(
-        Permission memory permission,
-        uint256 ctHash
-    ) external view returns (bool) {
-        return acl.isAllowedWithPermission(permission, ctHash);
+    function extractSigner(
+        EncryptedInput memory input,
+        address sender
+    ) private view returns (address) {
+        bytes memory combined = abi.encodePacked(
+            input.ctHash,
+            input.utype,
+            input.securityZone,
+            sender,
+            block.chainid
+        );
+
+        bytes32 expectedHash = keccak256(combined);
+
+        console.log("verify sign combined");
+        console.logBytes32(expectedHash);
+
+        address signer = ECDSA.recover(expectedHash, input.signature);
+        if (signer == address(0)) {
+            revert InvalidSignature();
+        }
+
+        return signer;
     }
 
-    function aclEIP712Domain()
-        external
-        view
-        returns (
-            bytes1 fields,
-            string memory name,
-            string memory version,
-            uint256 chainId,
-            address verifyingContract,
-            bytes32 salt,
-            uint256[] memory extensions
-        )
-    {
-        return acl.eip712Domain();
+    function setVerifierSigner(address signer) external onlyOwner {
+        verifierSigner = signer;
     }
 
-    function checkSignature(
-        uint256 ctHash,
-        uint8 uintType,
-        int32 securityZone,
-        bytes memory signature
-    ) private view returns (bool) {
-        // TODO : Implement signature verification. signature should include user, securityZone and uintType
-        uintType;
-        securityZone;
-        ctHash;
-        signature;
-
-        // NOTE: MOCK
-        MOCK_verifyInEuintSignature(ctHash, securityZone, uintType, signature);
-        return true;
-    }
-
-    function setSecurityZoneMax(int32 securityZone) external onlyAdmin {
+    function setSecurityZoneMax(int32 securityZone) external onlyOwner {
         if (securityZone < securityZoneMin) {
             revert InvalidSecurityZone(
                 securityZone,
@@ -672,7 +719,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         securityZoneMax = securityZone;
     }
 
-    function setSecurityZoneMin(int32 securityZone) external onlyAdmin {
+    function setSecurityZoneMin(int32 securityZone) external onlyOwner {
         if (securityZone > securityZoneMax) {
             revert InvalidSecurityZone(
                 securityZone,
@@ -683,22 +730,33 @@ contract TaskManager is ITaskManager, MockCoFHE {
         securityZoneMin = securityZone;
     }
 
-    function setACLContract(address _aclAddress) external onlyAdmin {
+    function setACLContract(address _aclAddress) external onlyOwner {
         if (_aclAddress == address(0)) {
             revert InvalidAddress();
         }
         acl = ACL(_aclAddress);
     }
 
-    function setAggregator(address _aggregatorAddress) external onlyAdmin {
+    // function setPlaintextsStorage(
+    //     address _plaintextsStorageAddress
+    // ) external onlyOwner {
+    //     if (_plaintextsStorageAddress == address(0)) {
+    //         revert InvalidAddress();
+    //     }
+    //     plaintextsStorage = PlaintextsStorage(_plaintextsStorageAddress);
+    // }
+
+    function setAggregator(address _aggregatorAddress) external onlyOwner {
         if (_aggregatorAddress == address(0)) {
             revert InvalidAddress();
         }
         aggregator = _aggregatorAddress;
     }
 
-    // todo (eshel) remove for production, we don't have test for non-trivially encrypted cts yet.
-    function simulateVerifyKey(uint256 ctHash, uint8, int32, uint8) external {
-        acl.allowTransient(ctHash, msg.sender);
+    function isAllowedWithPermission(
+        Permission memory permission,
+        uint256 handle
+    ) public view returns (bool) {
+        return acl.isAllowedWithPermission(permission, handle);
     }
 }

@@ -51,7 +51,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_queryDecrypt_self() public {
-        InEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100, bob);
 
         vm.prank(bob);
         example.setBalance(inAmount);
@@ -69,7 +69,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_queryDecrypt_shared() public {
-        InEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100, bob);
 
         vm.prank(bob);
         example.setBalance(inAmount);
@@ -92,7 +92,7 @@ contract QueryDecryptTest is Test {
     }
 
     function test_getBalance_querySealOutput() public {
-        InEuint32 memory inAmount = CFT.createInEuint32(100);
+        InEuint32 memory inAmount = CFT.createInEuint32(100, bob);
 
         vm.prank(bob);
         example.setBalance(inAmount);

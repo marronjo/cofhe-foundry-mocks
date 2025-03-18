@@ -13,6 +13,7 @@ import {Permission, PermissionUtils} from "./Permissioned.sol";
 import {MockQueryDecrypter} from "./MockQueryDecrypter.sol";
 import {QUERY_DECRYPTER_ADDRESS} from "./addresses/QueryDecrypterAddress.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import {SIGNER_ADDRESS} from "./MockCoFHE.sol";
 
 contract CoFheTest is Test {
     TaskManager public taskManager;
@@ -40,15 +41,33 @@ contract CoFheTest is Test {
 
         // TASK MANAGER
 
-        deployCodeTo("MockTaskManager.sol:TaskManager", TASK_MANAGER_ADDRESS);
+        TaskManager tmImplementation = new TaskManager();
+        bytes memory tmInitData = abi.encodeWithSelector(
+            TaskManager.initialize.selector,
+            TM_ADMIN
+        );
+        deployCodeTo(
+            "ERC1967Proxy.sol:ERC1967Proxy",
+            abi.encode(address(tmImplementation), tmInitData),
+            TASK_MANAGER_ADDRESS
+        );
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
-        taskManager.initialize(TM_ADMIN, 0, 1);
         vm.label(address(taskManager), "TaskManager(Mock)");
+
+        console.log("TaskManager initialized: ", taskManager.isInitialized());
+        console.log("TaskManager owner: ", taskManager.owner());
+
+        vm.startPrank(TM_ADMIN);
+        taskManager.setSecurityZoneMin(0);
+        taskManager.setSecurityZoneMax(1);
+        taskManager.setVerifierSigner(SIGNER_ADDRESS);
+        vm.stopPrank();
 
         // ACL
 
         // Deploy implementation
         ACL aclImplementation = new ACL();
+        console.log("Imp tm", aclImplementation.TASK_MANAGER_ADDRESS());
 
         // Deploy proxy with implementation
         bytes memory initData = abi.encodeWithSelector(
@@ -61,6 +80,7 @@ contract CoFheTest is Test {
             ACL_ADDRESS
         );
         acl = ACL(ACL_ADDRESS);
+        console.log("Imp tm", acl.TASK_MANAGER_ADDRESS());
         vm.label(address(acl), "ACL");
 
         // console.log("ACL deployed to: ", address(acl));
@@ -234,32 +254,19 @@ contract CoFheTest is Test {
     function createEncryptedInput(
         uint8 utype,
         uint256 value,
-        uint8 securityZone
-    ) internal returns (bytes memory) {
-        uint256 chainId = uint256(block.chainid);
-
+        uint8 securityZone,
+        address sender
+    ) internal returns (EncryptedInput memory input) {
         // Create input
-        EncryptedInput memory input = zkVerifier.zkVerify(
+        input = zkVerifier.zkVerify(
             value,
             utype,
-            msg.sender,
+            sender,
             securityZone,
-            chainId
+            block.chainid
         );
 
-        // Sign input
-        input = zkVerifierSigner.zkVerifySign(input);
-
-        console.log("Input ctHash: ", input.ctHash);
-
-        EncryptedInput memory input2 = abi.decode(
-            abi.encode(input.ctHash, securityZone, utype, input.signature),
-            (EncryptedInput)
-        );
-
-        console.log("Input2 ctHash: ", input2.ctHash);
-
-        return abi.encode(input.ctHash, securityZone, utype, input.signature);
+        input = zkVerifierSigner.zkVerifySign(input, sender);
     }
 
     // Derived functions that use the generic create
@@ -272,14 +279,18 @@ contract CoFheTest is Test {
      */
     function createInEbool(
         bool value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEbool memory) {
         return
             abi.decode(
-                createEncryptedInput(
-                    Utils.EBOOL_TFHE,
-                    value ? 1 : 0,
-                    securityZone
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EBOOL_TFHE,
+                        value ? 1 : 0,
+                        securityZone,
+                        sender
+                    )
                 ),
                 (InEbool)
             );
@@ -293,11 +304,19 @@ contract CoFheTest is Test {
      */
     function createInEuint8(
         uint8 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint8 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT8_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT8_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint8)
             );
     }
@@ -310,11 +329,19 @@ contract CoFheTest is Test {
      */
     function createInEuint16(
         uint16 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint16 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT16_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT16_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint16)
             );
     }
@@ -327,11 +354,19 @@ contract CoFheTest is Test {
      */
     function createInEuint32(
         uint32 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint32 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT32_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT32_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint32)
             );
     }
@@ -344,11 +379,19 @@ contract CoFheTest is Test {
      */
     function createInEuint64(
         uint64 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint64 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT64_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT64_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint64)
             );
     }
@@ -361,11 +404,19 @@ contract CoFheTest is Test {
      */
     function createInEuint128(
         uint128 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint128 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT128_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT128_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint128)
             );
     }
@@ -378,11 +429,19 @@ contract CoFheTest is Test {
      */
     function createInEuint256(
         uint256 value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEuint256 memory) {
         return
             abi.decode(
-                createEncryptedInput(Utils.EUINT256_TFHE, value, securityZone),
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EUINT256_TFHE,
+                        value,
+                        securityZone,
+                        sender
+                    )
+                ),
                 (InEuint256)
             );
     }
@@ -395,14 +454,18 @@ contract CoFheTest is Test {
      */
     function createInEaddress(
         address value,
-        uint8 securityZone
+        uint8 securityZone,
+        address sender
     ) public returns (InEaddress memory) {
         return
             abi.decode(
-                createEncryptedInput(
-                    Utils.EADDRESS_TFHE,
-                    uint256(uint160(value)),
-                    securityZone
+                abi.encode(
+                    createEncryptedInput(
+                        Utils.EADDRESS_TFHE,
+                        uint256(uint160(value)),
+                        securityZone,
+                        sender
+                    )
                 ),
                 (InEaddress)
             );
@@ -410,42 +473,60 @@ contract CoFheTest is Test {
 
     // Overloads with default securityZone=0 for backward compatibility
 
-    function createInEbool(bool value) public returns (InEbool memory) {
-        return createInEbool(value, 0);
+    function createInEbool(
+        bool value,
+        address sender
+    ) public returns (InEbool memory) {
+        return createInEbool(value, 0, sender);
     }
 
-    function createInEuint8(uint8 value) public returns (InEuint8 memory) {
-        return createInEuint8(value, 0);
+    function createInEuint8(
+        uint8 value,
+        address sender
+    ) public returns (InEuint8 memory) {
+        return createInEuint8(value, 0, sender);
     }
 
-    function createInEuint16(uint16 value) public returns (InEuint16 memory) {
-        return createInEuint16(value, 0);
+    function createInEuint16(
+        uint16 value,
+        address sender
+    ) public returns (InEuint16 memory) {
+        return createInEuint16(value, 0, sender);
     }
 
-    function createInEuint32(uint32 value) public returns (InEuint32 memory) {
-        return createInEuint32(value, 0);
+    function createInEuint32(
+        uint32 value,
+        address sender
+    ) public returns (InEuint32 memory) {
+        return createInEuint32(value, 0, sender);
     }
 
-    function createInEuint64(uint64 value) public returns (InEuint64 memory) {
-        return createInEuint64(value, 0);
+    function createInEuint64(
+        uint64 value,
+        address sender
+    ) public returns (InEuint64 memory) {
+        return createInEuint64(value, 0, sender);
     }
 
     function createInEuint128(
-        uint128 value
+        uint128 value,
+        address sender
     ) public returns (InEuint128 memory) {
-        return createInEuint128(value, 0);
+        return createInEuint128(value, 0, sender);
     }
 
     function createInEuint256(
-        uint256 value
+        uint256 value,
+        address sender
     ) public returns (InEuint256 memory) {
-        return createInEuint256(value, 0);
+        return createInEuint256(value, 0, sender);
     }
 
     function createInEaddress(
-        address value
+        address value,
+        address sender
     ) public returns (InEaddress memory) {
-        return createInEaddress(value, 0);
+        return createInEaddress(value, 0, sender);
     }
 
     // PERMISSIONS

@@ -8,6 +8,7 @@ import "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 contract ExampleFHECounterTest is Test {
     CoFheTest CFT;
+    address bob = makeAddr("bob");
 
     ExampleFHECounter public counter;
 
@@ -17,12 +18,13 @@ contract ExampleFHECounterTest is Test {
         counter = new ExampleFHECounter();
 
         // Set number to 5
-        InEuint32 memory inNumber = CFT.createInEuint32(5);
+        InEuint32 memory inNumber = CFT.createInEuint32(5, bob);
+        vm.prank(bob);
         counter.setNumber(inNumber);
     }
 
     function test_setNumber() public {
-        InEuint32 memory inNumber = CFT.createInEuint32(10);
+        InEuint32 memory inNumber = CFT.createInEuint32(10, bob);
         counter.setNumber(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }
@@ -33,19 +35,19 @@ contract ExampleFHECounterTest is Test {
     }
 
     function test_add() public {
-        InEuint32 memory inNumber = CFT.createInEuint32(2);
+        InEuint32 memory inNumber = CFT.createInEuint32(2, bob);
         counter.add(inNumber);
         CFT.assertHashValue(counter.eNumber(), 7);
     }
 
     function test_sub() public {
-        InEuint32 memory inNumber = CFT.createInEuint32(3);
+        InEuint32 memory inNumber = CFT.createInEuint32(3, bob);
         counter.sub(inNumber);
         CFT.assertHashValue(counter.eNumber(), 2);
     }
 
     function test_mul() public {
-        InEuint32 memory inNumber = CFT.createInEuint32(2);
+        InEuint32 memory inNumber = CFT.createInEuint32(2, bob);
         counter.mul(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }

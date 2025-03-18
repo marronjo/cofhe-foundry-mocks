@@ -33,9 +33,10 @@ contract MockTaskManagerTests is Test {
     }
 
     function test_mock_InEuintXX() public {
+        address bob = makeAddr("bob");
         {
             bool boolValue = true;
-            InEbool memory InEboolValue = CFT.createInEbool(boolValue);
+            InEbool memory InEboolValue = CFT.createInEbool(boolValue, bob);
             CFT.assertHashValue(InEboolValue.ctHash, 1);
 
             ebool eboolValue = FHE.asEbool(InEboolValue);
@@ -44,7 +45,7 @@ contract MockTaskManagerTests is Test {
 
         {
             uint8 uint8Value = 10;
-            InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
+            InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value, bob);
             CFT.assertHashValue(InEuint8Value.ctHash, uint8Value);
 
             euint8 euint8Value = FHE.asEuint8(InEuint8Value);
@@ -53,7 +54,10 @@ contract MockTaskManagerTests is Test {
 
         {
             uint16 uint16Value = 1000;
-            InEuint16 memory InEuint16Value = CFT.createInEuint16(uint16Value);
+            InEuint16 memory InEuint16Value = CFT.createInEuint16(
+                uint16Value,
+                bob
+            );
             CFT.assertHashValue(InEuint16Value.ctHash, uint16Value);
 
             euint16 euint16Value = FHE.asEuint16(InEuint16Value);
@@ -62,7 +66,10 @@ contract MockTaskManagerTests is Test {
 
         {
             uint32 uint32Value = 1000000;
-            InEuint32 memory InEuint32Value = CFT.createInEuint32(uint32Value);
+            InEuint32 memory InEuint32Value = CFT.createInEuint32(
+                uint32Value,
+                bob
+            );
             CFT.assertHashValue(InEuint32Value.ctHash, uint32Value);
 
             euint32 euint32Value = FHE.asEuint32(InEuint32Value);
@@ -71,7 +78,10 @@ contract MockTaskManagerTests is Test {
 
         {
             uint64 uint64Value = 1000000000;
-            InEuint64 memory InEuint64Value = CFT.createInEuint64(uint64Value);
+            InEuint64 memory InEuint64Value = CFT.createInEuint64(
+                uint64Value,
+                bob
+            );
             CFT.assertHashValue(InEuint64Value.ctHash, uint64Value);
 
             euint64 euint64Value = FHE.asEuint64(InEuint64Value);
@@ -81,7 +91,8 @@ contract MockTaskManagerTests is Test {
         {
             uint128 uint128Value = 1000000000000;
             InEuint128 memory InEuint128Value = CFT.createInEuint128(
-                uint128Value
+                uint128Value,
+                bob
             );
             CFT.assertHashValue(InEuint128Value.ctHash, uint128Value);
 
@@ -92,7 +103,8 @@ contract MockTaskManagerTests is Test {
         {
             uint256 uint256Value = 1000000000000000;
             InEuint256 memory InEuint256Value = CFT.createInEuint256(
-                uint256Value
+                uint256Value,
+                bob
             );
             CFT.assertHashValue(InEuint256Value.ctHash, uint256Value);
 
@@ -103,7 +115,8 @@ contract MockTaskManagerTests is Test {
         {
             address addressValue = 0x888888CfAebbEd5554c3F36BfBD233f822e9455f;
             InEaddress memory InEaddressValue = CFT.createInEaddress(
-                addressValue
+                addressValue,
+                bob
             );
             CFT.assertHashValue(
                 InEaddressValue.ctHash,
@@ -282,8 +295,10 @@ contract MockTaskManagerTests is Test {
         uint160 userAddress = 512;
 
         uint8 uint8Value = 10;
-        vm.prank(address(userAddress));
-        InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
+        InEuint8 memory InEuint8Value = CFT.createInEuint8(
+            uint8Value,
+            address(userAddress)
+        );
 
         vm.prank(address(userAddress));
         simpleDecrypter.decrypt(InEuint8Value);
@@ -301,8 +316,10 @@ contract MockTaskManagerTests is Test {
         uint160 userAddress = 512;
 
         uint8 uint8Value = 10;
-        vm.prank(address(userAddress));
-        InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value);
+        InEuint8 memory InEuint8Value = CFT.createInEuint8(
+            uint8Value,
+            address(userAddress)
+        );
 
         vm.prank(address(userAddress));
         euint8 euint8Value = FHE.asEuint8(InEuint8Value);

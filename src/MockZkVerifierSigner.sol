@@ -3,33 +3,46 @@
 
 pragma solidity >=0.8.19 <0.9.0;
 
+import {console} from "forge-std/console.sol";
 import {SIGNER_PRIVATE_KEY, EncryptedInput} from "./MockCoFHE.sol";
 import {Test} from "forge-std/Test.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract MockZkVerifierSigner is Test {
     function zkVerifySignPacked(
-        EncryptedInput[] memory inputs
-    ) public pure returns (EncryptedInput[] memory) {
+        EncryptedInput[] memory inputs,
+        address sender
+    ) public view returns (EncryptedInput[] memory) {
         EncryptedInput[] memory signedInputs = new EncryptedInput[](
             inputs.length
         );
         for (uint256 i = 0; i < inputs.length; i++) {
-            signedInputs[i] = zkVerifySign(inputs[i]);
+            signedInputs[i] = zkVerifySign(inputs[i], sender);
         }
         return signedInputs;
     }
 
     function zkVerifySign(
-        EncryptedInput memory input
-    ) public pure returns (EncryptedInput memory) {
-        bytes32 digest = MessageHashUtils.toEthSignedMessageHash(
-            keccak256(
-                abi.encodePacked(input.ctHash, input.securityZone, input.utype)
-            )
+        EncryptedInput memory input,
+        address sender
+    ) public view returns (EncryptedInput memory) {
+        bytes memory combined = abi.encodePacked(
+            input.ctHash,
+            input.utype,
+            input.securityZone,
+            sender,
+            block.chainid
         );
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(SIGNER_PRIVATE_KEY, digest);
+        bytes32 expectedHash = keccak256(combined);
+
+        console.log("sign combined");
+        console.logBytes32(expectedHash);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+            SIGNER_PRIVATE_KEY,
+            expectedHash
+        );
         bytes memory signature = abi.encodePacked(r, s, v); // note the order here is different from line above.
 
         input.signature = signature;
