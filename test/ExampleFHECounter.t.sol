@@ -25,6 +25,7 @@ contract ExampleFHECounterTest is Test {
 
     function test_setNumber() public {
         InEuint32 memory inNumber = CFT.createInEuint32(10, bob);
+        vm.prank(bob);
         counter.setNumber(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }
@@ -36,18 +37,21 @@ contract ExampleFHECounterTest is Test {
 
     function test_add() public {
         InEuint32 memory inNumber = CFT.createInEuint32(2, bob);
+        vm.prank(bob);
         counter.add(inNumber);
         CFT.assertHashValue(counter.eNumber(), 7);
     }
 
     function test_sub() public {
         InEuint32 memory inNumber = CFT.createInEuint32(3, bob);
+        vm.prank(bob);
         counter.sub(inNumber);
         CFT.assertHashValue(counter.eNumber(), 2);
     }
 
     function test_mul() public {
         InEuint32 memory inNumber = CFT.createInEuint32(2, bob);
+        vm.prank(bob);
         counter.mul(inNumber);
         CFT.assertHashValue(counter.eNumber(), 10);
     }

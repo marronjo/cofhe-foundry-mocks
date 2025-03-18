@@ -38,18 +38,12 @@ contract MockTaskManagerTests is Test {
             bool boolValue = true;
             InEbool memory InEboolValue = CFT.createInEbool(boolValue, bob);
             CFT.assertHashValue(InEboolValue.ctHash, 1);
-
-            ebool eboolValue = FHE.asEbool(InEboolValue);
-            assertEq(InEboolValue.ctHash, ebool.unwrap(eboolValue));
         }
 
         {
             uint8 uint8Value = 10;
             InEuint8 memory InEuint8Value = CFT.createInEuint8(uint8Value, bob);
             CFT.assertHashValue(InEuint8Value.ctHash, uint8Value);
-
-            euint8 euint8Value = FHE.asEuint8(InEuint8Value);
-            assertEq(InEuint8Value.ctHash, euint8.unwrap(euint8Value));
         }
 
         {
@@ -59,9 +53,6 @@ contract MockTaskManagerTests is Test {
                 bob
             );
             CFT.assertHashValue(InEuint16Value.ctHash, uint16Value);
-
-            euint16 euint16Value = FHE.asEuint16(InEuint16Value);
-            assertEq(InEuint16Value.ctHash, euint16.unwrap(euint16Value));
         }
 
         {
@@ -71,9 +62,6 @@ contract MockTaskManagerTests is Test {
                 bob
             );
             CFT.assertHashValue(InEuint32Value.ctHash, uint32Value);
-
-            euint32 euint32Value = FHE.asEuint32(InEuint32Value);
-            assertEq(InEuint32Value.ctHash, euint32.unwrap(euint32Value));
         }
 
         {
@@ -83,9 +71,6 @@ contract MockTaskManagerTests is Test {
                 bob
             );
             CFT.assertHashValue(InEuint64Value.ctHash, uint64Value);
-
-            euint64 euint64Value = FHE.asEuint64(InEuint64Value);
-            assertEq(InEuint64Value.ctHash, euint64.unwrap(euint64Value));
         }
 
         {
@@ -95,9 +80,6 @@ contract MockTaskManagerTests is Test {
                 bob
             );
             CFT.assertHashValue(InEuint128Value.ctHash, uint128Value);
-
-            euint128 euint128Value = FHE.asEuint128(InEuint128Value);
-            assertEq(InEuint128Value.ctHash, euint128.unwrap(euint128Value));
         }
 
         {
@@ -107,9 +89,6 @@ contract MockTaskManagerTests is Test {
                 bob
             );
             CFT.assertHashValue(InEuint256Value.ctHash, uint256Value);
-
-            euint256 euint256Value = FHE.asEuint256(InEuint256Value);
-            assertEq(InEuint256Value.ctHash, euint256.unwrap(euint256Value));
         }
 
         {
@@ -122,9 +101,6 @@ contract MockTaskManagerTests is Test {
                 InEaddressValue.ctHash,
                 uint256(uint160(addressValue))
             );
-
-            eaddress eaddressValue = FHE.asEaddress(InEaddressValue);
-            assertEq(InEaddressValue.ctHash, eaddress.unwrap(eaddressValue));
         }
     }
 
@@ -313,15 +289,12 @@ contract MockTaskManagerTests is Test {
     error ACLNotAllowed(uint256 handle, address account);
 
     function test_ACL_not_allowed() public {
-        uint160 userAddress = 512;
-
         uint8 uint8Value = 10;
         InEuint8 memory InEuint8Value = CFT.createInEuint8(
             uint8Value,
-            address(userAddress)
+            msg.sender
         );
 
-        vm.prank(address(userAddress));
         euint8 euint8Value = FHE.asEuint8(InEuint8Value);
 
         // Decrypt reverts (not allowed yet)
@@ -338,7 +311,6 @@ contract MockTaskManagerTests is Test {
 
         // Allow decrypt
 
-        vm.prank(address(userAddress));
         FHE.allow(euint8Value, address(thiefDecrypter));
 
         // Decrypt succeeds

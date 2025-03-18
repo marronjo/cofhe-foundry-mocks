@@ -30,12 +30,7 @@ contract MockZkVerifierTests is Test {
         CFT.assertHashValue(input.ctHash, 5);
 
         // Signature should be valid
-        CFT.taskManager().MOCK_verifyInEuintSignature(
-            input.ctHash,
-            int32(int8(input.securityZone)),
-            input.utype,
-            input.signature
-        );
+        CFT.taskManager().verifyInput(input, sender);
     }
 
     function test_zkVerifyPacked() public {
@@ -63,18 +58,7 @@ contract MockZkVerifierTests is Test {
         CFT.assertHashValue(inputs[0].ctHash, 5);
         CFT.assertHashValue(inputs[1].ctHash, 6);
 
-        // Signature should be valid
-        CFT.taskManager().MOCK_verifyInEuintSignature(
-            inputs[0].ctHash,
-            int32(int8(inputs[0].securityZone)),
-            inputs[0].utype,
-            inputs[0].signature
-        );
-        CFT.taskManager().MOCK_verifyInEuintSignature(
-            inputs[1].ctHash,
-            int32(int8(inputs[1].securityZone)),
-            inputs[1].utype,
-            inputs[1].signature
-        );
+        CFT.taskManager().verifyInput(inputs[0], sender);
+        CFT.taskManager().verifyInput(inputs[1], sender);
     }
 }
