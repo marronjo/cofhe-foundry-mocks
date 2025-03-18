@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/ACL.sol": {
-      "lastModificationDate": 1742291223366,
-      "contentHash": "c7a288767efbdbb89c992316fa910584",
+      "lastModificationDate": 1742292639173,
+      "contentHash": "975ccf14b4cacbcd64720d74547b1c45",
       "sourceName": "src/ACL.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1075,8 +1075,8 @@
       ]
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/MockTaskManager.sol": {
-      "lastModificationDate": 1742291133855,
-      "contentHash": "26eaa7d9525d917530fa4c08c08a6427",
+      "lastModificationDate": 1742292647244,
+      "contentHash": "68bbe7f1c50ab8d20d6d42adc8c57fe6",
       "sourceName": "src/MockTaskManager.sol",
       "solcConfig": {
         "version": "0.8.28",

@@ -294,6 +294,10 @@ contract TaskManager is ITaskManager, MockCoFHE {
         securityZoneMax = maxSZ;
     }
 
+    function exists() public view returns (bool) {
+        return true;
+    }
+
     function sendEventCreated(
         uint256 ctHash,
         string memory operation,

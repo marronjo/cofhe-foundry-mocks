@@ -88,6 +88,10 @@ contract ACL is
         __PermissionedUpgradeable_init();
     }
 
+    function exists() public view returns (bool) {
+        return true;
+    }
+
     /**
      * @notice              Allows the use of `handle` for the address `account`.
      * @dev                 The caller must be allowed to use `handle` for allow() to succeed. If not, allow() reverts.

@@ -4,15 +4,23 @@ import '@nomicfoundation/hardhat-foundry'
 import '@nomicfoundation/hardhat-ethers'
 
 import axios from 'axios'
-import { execSync } from 'child_process'
 import fs from 'fs/promises'
-import { MockQueryDecrypter, mockTaskManagerSol, MockZkVerifier } from './typechain-types/src'
+import { MockQueryDecrypter, MockZkVerifier } from './typechain-types/src'
 import { TaskManager } from './typechain-types'
+import { execSync } from 'child_process'
 
 const TASK_MANAGER_ADDRESS = '0xbeb4eF1fcEa618C6ca38e3828B00f8D481EC2CC2'
 const ZK_VERIFIER_ADDRESS = '0x0000000000000000000000000000000000000100'
 const QUERY_DECRYPTER_ADDRESS = '0x0000000000000000000000000000000000000200'
 
+const anvilSetCode = async (address: string, bytecode: string) => {
+	await axios.post('http://127.0.0.1:8545', {
+		jsonrpc: '2.0',
+		method: 'anvil_setCode',
+		params: [address, bytecode],
+		id: 1,
+	})
+}
 // Define a custom task
 task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(async (taskArgs, hre) => {
 	console.log('Deploy Mocks On Anvil... \n')
@@ -28,6 +36,7 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 	}
 
 	await hre.run('compile')
+	await execSync('forge compile')
 
 	// // Deploy MockTaskManager (using ethers)
 	// const MockTaskManager = await hre.ethers.getContractFactory('MockTaskManager')
@@ -39,12 +48,8 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 
 	const taskManagerBytecode = await fs.readFile('./out/MockTaskManager.sol/TaskManager.json', 'utf8')
 	const taskManagerJson = JSON.parse(taskManagerBytecode)
-	await axios.post('http://127.0.0.1:8545', {
-		jsonrpc: '2.0',
-		method: 'anvil_setCode',
-		params: [TASK_MANAGER_ADDRESS, taskManagerJson.deployedBytecode.object],
-		id: 1,
-	})
+	await anvilSetCode(TASK_MANAGER_ADDRESS, taskManagerJson.deployedBytecode.object)
+
 	const taskManager: TaskManager = await hre.ethers.getContractAt('TaskManager', TASK_MANAGER_ADDRESS)
 	const tmDeployTx = await taskManager.initialize(signer.address, 0, 1)
 	await tmDeployTx.wait()
@@ -82,12 +87,7 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 
 	const zkVerifierBytecode = await fs.readFile('./out/MockZkVerifier.sol/MockZkVerifier.json', 'utf8')
 	const zkVerifierJson = JSON.parse(zkVerifierBytecode)
-	await axios.post('http://127.0.0.1:8545', {
-		jsonrpc: '2.0',
-		method: 'anvil_setCode',
-		params: [ZK_VERIFIER_ADDRESS, zkVerifierJson.deployedBytecode.object],
-		id: 1,
-	})
+	await anvilSetCode(ZK_VERIFIER_ADDRESS, zkVerifierJson.deployedBytecode.object)
 	const zkVerifier: MockZkVerifier = await hre.ethers.getContractAt('MockZkVerifier', ZK_VERIFIER_ADDRESS)
 
 	console.log('\t! MockZkVerifier deployed:', await zkVerifier.getAddress())
@@ -99,12 +99,7 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 
 	const queryDecrypterBytecode = await fs.readFile('./out/MockQueryDecrypter.sol/MockQueryDecrypter.json', 'utf8')
 	const queryDecrypterJson = JSON.parse(queryDecrypterBytecode)
-	await axios.post('http://127.0.0.1:8545', {
-		jsonrpc: '2.0',
-		method: 'anvil_setCode',
-		params: [QUERY_DECRYPTER_ADDRESS, queryDecrypterJson.deployedBytecode.object],
-		id: 1,
-	})
+	await anvilSetCode(QUERY_DECRYPTER_ADDRESS, queryDecrypterJson.deployedBytecode.object)
 	const queryDecrypter: MockQueryDecrypter = await hre.ethers.getContractAt('MockQueryDecrypter', QUERY_DECRYPTER_ADDRESS)
 
 	console.log('\t! MockQueryDecrypter deployed:', await queryDecrypter.getAddress())
@@ -118,6 +113,24 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 
 	console.log('\t! MockQueryDecrypter TaskManager address:', await queryDecrypter.taskManager())
 	console.log('\t! MockQueryDecrypter ACL address:', await queryDecrypter.acl())
+})
+
+task('check-mocks-on-anvil', 'Checks if the mocks are deployed on Anvil').setAction(async (taskArgs, hre) => {
+	const network = hre.network.name
+	if (network !== 'anvil') {
+		console.log(`This task is intended to run on the Anvil network. Current network: ${network}`)
+		return
+	}
+
+	const taskManager = await hre.ethers.getContractAt('TaskManager', TASK_MANAGER_ADDRESS)
+	const acl = await hre.ethers.getContractAt('ACL', await taskManager.acl())
+	const zkVerifier = await hre.ethers.getContractAt('MockZkVerifier', ZK_VERIFIER_ADDRESS)
+	const queryDecrypter = await hre.ethers.getContractAt('MockQueryDecrypter', QUERY_DECRYPTER_ADDRESS)
+
+	console.log('\t! TaskManager exists:', await taskManager.exists())
+	console.log('\t! ACL exists:', await acl.exists())
+	console.log('\t! ZkVerifier exists:', await zkVerifier.exists())
+	console.log('\t! QueryDecrypter exists:', await queryDecrypter.exists())
 })
 
 const config: HardhatUserConfig = {
