@@ -54,9 +54,6 @@ contract CoFheTest is Test {
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
         vm.label(address(taskManager), "TaskManager(Mock)");
 
-        console.log("TaskManager initialized: ", taskManager.isInitialized());
-        console.log("TaskManager owner: ", taskManager.owner());
-
         vm.startPrank(TM_ADMIN);
         taskManager.setSecurityZoneMin(0);
         taskManager.setSecurityZoneMax(1);
@@ -67,7 +64,6 @@ contract CoFheTest is Test {
 
         // Deploy implementation
         ACL aclImplementation = new ACL();
-        console.log("Imp tm", aclImplementation.TASK_MANAGER_ADDRESS());
 
         // Deploy proxy with implementation
         bytes memory initData = abi.encodeWithSelector(
@@ -80,7 +76,6 @@ contract CoFheTest is Test {
             ACL_ADDRESS
         );
         acl = ACL(ACL_ADDRESS);
-        console.log("Imp tm", acl.TASK_MANAGER_ADDRESS());
         vm.label(address(acl), "ACL");
 
         // console.log("ACL deployed to: ", address(acl));
@@ -549,10 +544,10 @@ contract CoFheTest is Test {
         // verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
         // chainId = 420105;
 
-        console.log("Domain Name: ", name);
-        console.log("Domain Version: ", version);
-        console.log("Domain ChainId: ", chainId);
-        console.log("Domain Verifying Contract: ", verifyingContract);
+        // console.log("Domain Name: ", name);
+        // console.log("Domain Version: ", version);
+        // console.log("Domain ChainId: ", chainId);
+        // console.log("Domain Verifying Contract: ", verifyingContract);
 
         // console.log("verifyingContract: ", verifyingContract);
 

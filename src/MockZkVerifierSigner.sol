@@ -36,9 +36,6 @@ contract MockZkVerifierSigner is Test {
 
         bytes32 expectedHash = keccak256(combined);
 
-        console.log("sign combined");
-        console.logBytes32(expectedHash);
-
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             SIGNER_PRIVATE_KEY,
             expectedHash

@@ -80,15 +80,11 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionShared(permission, bobPKey);
         permission = CFT.signPermissionRecipient(permission, alicePKey);
 
-        console.logBytes(permission.issuerSignature);
-
         uint256 decrypted = CFT.queryDecrypt(
             permission,
             euint32.unwrap(result)
         );
         assertEq(decrypted, 100);
-
-        console.logBytes32(permission.sealingKey);
     }
 
     function test_getBalance_querySealOutput() public {

@@ -693,9 +693,6 @@ contract TaskManager is
 
         bytes32 expectedHash = keccak256(combined);
 
-        console.log("verify sign combined");
-        console.logBytes32(expectedHash);
-
         address signer = ECDSA.recover(expectedHash, input.signature);
         if (signer == address(0)) {
             revert InvalidSignature();
