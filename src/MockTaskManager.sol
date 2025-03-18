@@ -288,8 +288,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         _;
     }
 
-    // Constructor to set the admin address
-    constructor(address _admin, int32 minSZ, int32 maxSZ) {
+    function initialize(address _admin, int32 minSZ, int32 maxSZ) external {
         admin = _admin;
         securityZoneMin = minSZ;
         securityZoneMax = maxSZ;

@@ -112,7 +112,7 @@ contract MockZkVerifier {
         uint8 utype,
         address user,
         int32 securityZone,
-        uint256 chainId
+        uint256
     ) public returns (EncryptedInput memory) {
         uint256 ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
         TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);

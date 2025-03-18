@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {EncryptedInput} from "./MockCoFHE.sol";
 import {ACL} from "./ACL.sol";
@@ -13,6 +13,7 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 import {Permission, PermissionUtils} from "./Permissioned.sol";
 import {MockQueryDecrypter} from "./MockQueryDecrypter.sol";
 import {QUERY_DECRYPTER_ADDRESS} from "./addresses/QueryDecrypterAddress.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract CoFheTest is Test {
     TaskManager public taskManager;
@@ -33,13 +34,40 @@ contract CoFheTest is Test {
     // SETUP
 
     function etchFhenixMocks() internal {
-        deployCodeTo(
-            "MockTaskManager.sol:TaskManager",
-            abi.encode(TM_ADMIN, 0, 1),
-            TASK_MANAGER_ADDRESS
-        );
+        // TASK MANAGER
+
+        deployCodeTo("MockTaskManager.sol:TaskManager", TASK_MANAGER_ADDRESS);
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
+        taskManager.initialize(TM_ADMIN, 0, 1);
         vm.label(address(taskManager), "TaskManager(Mock)");
+
+        // ACL
+
+        // Deploy implementation
+        ACL aclImplementation = new ACL();
+
+        // Deploy proxy with implementation
+        bytes memory initData = abi.encodeWithSelector(
+            ACL.initialize.selector,
+            TM_ADMIN
+        );
+        ERC1967Proxy proxy = new ERC1967Proxy(
+            address(aclImplementation),
+            initData
+        );
+        acl = ACL(address(proxy));
+        vm.label(address(acl), "ACL");
+
+        console.log("ACL deployed to: ", address(acl));
+        console.log(
+            "ACL implementation deployed to: ",
+            address(aclImplementation)
+        );
+
+        vm.prank(TM_ADMIN);
+        taskManager.setACLContract(address(acl));
+
+        // ZK VERIFIER
 
         deployCodeTo("MockZkVerifier.sol:MockZkVerifier", ZK_VERIFIER_ADDRESS);
         zkVerifier = MockZkVerifier(ZK_VERIFIER_ADDRESS);
@@ -52,12 +80,7 @@ contract CoFheTest is Test {
         zkVerifierSigner = MockZkVerifierSigner(ZK_VERIFIER_SIGNER_ADDRESS);
         vm.label(address(zkVerifierSigner), "MockZkVerifierSigner");
 
-        acl = new ACL();
-        acl.initialize(TM_ADMIN);
-        vm.label(address(acl), "ACL");
-
-        vm.prank(TM_ADMIN);
-        taskManager.setACLContract(address(acl));
+        // QUERY DECRYPTER
 
         deployCodeTo(
             "MockQueryDecrypter.sol:MockQueryDecrypter",
@@ -65,8 +88,10 @@ contract CoFheTest is Test {
         );
         queryDecrypter = MockQueryDecrypter(QUERY_DECRYPTER_ADDRESS);
         vm.label(address(queryDecrypter), "MockQueryDecrypter");
+        queryDecrypter.initialize(TASK_MANAGER_ADDRESS, address(acl));
 
-        // Set log setting
+        // SET LOG OPS
+
         taskManager.setLogOps(_log);
     }
 
@@ -417,10 +442,12 @@ contract CoFheTest is Test {
 
         (, name, version, chainId, verifyingContract, , ) = acl.eip712Domain();
 
-        name = "ACL";
-        version = "1";
-        verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
-        chainId = 420105;
+        // name = "ACL";
+        // version = "1";
+        // verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
+        // chainId = 420105;
+
+        // console.log("verifyingContract: ", verifyingContract);
 
         return
             keccak256(

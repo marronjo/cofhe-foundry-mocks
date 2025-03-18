@@ -15,9 +15,9 @@ contract MockQueryDecrypter {
     error SealingKeyMissing();
     error SealingKeyInvalid();
 
-    constructor() {
-        taskManager = TaskManager(TASK_MANAGER_ADDRESS);
-        acl = ACL(taskManager.acl());
+    function initialize(address _taskManager, address _acl) public {
+        taskManager = TaskManager(_taskManager);
+        acl = ACL(_acl);
     }
 
     // EXISTENCE
