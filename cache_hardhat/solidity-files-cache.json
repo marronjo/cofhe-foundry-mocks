@@ -1073,8 +1073,8 @@
       ]
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/MockTaskManager.sol": {
-      "lastModificationDate": 1742345533775,
-      "contentHash": "6731d99c954684e53b4943f39495fd4e",
+      "lastModificationDate": 1742377613526,
+      "contentHash": "bda283d7c17180359246833e2a75f10e",
       "sourceName": "src/MockTaskManager.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1312,8 +1312,8 @@
       ]
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/CoFheTest.sol": {
-      "lastModificationDate": 1742349418566,
-      "contentHash": "2b12954ca22ac30b9e4644491a018ec8",
+      "lastModificationDate": 1742388980731,
+      "contentHash": "d3c0e39e9ac0c09bcb9f4e3ec60211a9",
       "sourceName": "src/CoFheTest.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1437,8 +1437,8 @@
       "artifacts": []
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/MockQueryDecrypter.sol": {
-      "lastModificationDate": 1742371325081,
-      "contentHash": "faad770aff4f6c4cf191442325109483",
+      "lastModificationDate": 1742390261194,
+      "contentHash": "2d35d46d0bf46338644c148e34326c24",
       "sourceName": "src/MockQueryDecrypter.sol",
       "solcConfig": {
         "version": "0.8.28",

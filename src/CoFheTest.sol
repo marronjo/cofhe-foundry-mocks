@@ -22,7 +22,7 @@ contract CoFheTest is Test {
     ACL public acl;
     MockQueryDecrypter public queryDecrypter;
 
-    address public ACL_ADDRESS = 0x36C02dA8a0983159322a80FFE9F24b1acfF8B570;
+    address public ACL_ADDRESS = 0xa6Ea4b5291d044D93b73b3CFf3109A1128663E8B;
 
     bool private _log;
 
@@ -37,22 +37,14 @@ contract CoFheTest is Test {
 
     function etchFhenixMocks() internal {
         // Override chain id (uncomment to enable)
-        // vm.chainId(421614);
-        vm.chainId(31337);
+        // vm.chainId(421614); // Arb Sepolia
+        // vm.chainId(31337); // Anvil
+        vm.chainId(420105); // Localfhenix host 1
 
         // TASK MANAGER
-
-        TaskManager tmImplementation = new TaskManager();
-        bytes memory tmInitData = abi.encodeWithSelector(
-            TaskManager.initialize.selector,
-            TM_ADMIN
-        );
-        deployCodeTo(
-            "ERC1967Proxy.sol:ERC1967Proxy",
-            abi.encode(address(tmImplementation), tmInitData),
-            TASK_MANAGER_ADDRESS
-        );
+        deployCodeTo("MockTaskManager.sol:TaskManager", TASK_MANAGER_ADDRESS);
         taskManager = TaskManager(TASK_MANAGER_ADDRESS);
+        taskManager.initialize(TM_ADMIN);
         vm.label(address(taskManager), "TaskManager(Mock)");
 
         vm.startPrank(TM_ADMIN);
@@ -78,12 +70,6 @@ contract CoFheTest is Test {
         );
         acl = ACL(ACL_ADDRESS);
         vm.label(address(acl), "ACL");
-
-        // console.log("ACL deployed to: ", address(acl));
-        // console.log(
-        //     "ACL implementation deployed to: ",
-        //     address(aclImplementation)
-        // );
 
         vm.prank(TM_ADMIN);
         taskManager.setACLContract(address(acl));
@@ -540,18 +526,6 @@ contract CoFheTest is Test {
 
         (, name, version, chainId, verifyingContract, , ) = acl.eip712Domain();
 
-        // name = "ACL";
-        // version = "1";
-        // verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
-        // chainId = 420105;
-
-        console.log("Domain Name: ", name);
-        console.log("Domain Version: ", version);
-        console.log("Domain ChainId: ", chainId);
-        console.log("Domain Verifying Contract: ", verifyingContract);
-
-        // console.log("verifyingContract: ", verifyingContract);
-
         return
             keccak256(
                 abi.encode(
@@ -624,7 +598,7 @@ contract CoFheTest is Test {
     {
         permission = Permission({
             issuer: address(0),
-            expiration: 10000000000,
+            expiration: 1000000000000,
             recipient: address(0),
             validatorId: 0,
             validatorContract: address(0),
@@ -658,7 +632,7 @@ contract CoFheTest is Test {
         uint256 ctHash,
         uint256 hostChainId,
         Permission memory permission
-    ) public view returns (uint256) {
+    ) public view returns (bool, uint256) {
         return queryDecrypter.queryDecrypt(ctHash, hostChainId, permission);
     }
 
@@ -666,7 +640,7 @@ contract CoFheTest is Test {
         uint256 ctHash,
         uint256 hostChainId,
         Permission memory permission
-    ) public view returns (bytes32) {
+    ) public view returns (bool, bytes32) {
         return queryDecrypter.querySealOutput(ctHash, hostChainId, permission);
     }
 

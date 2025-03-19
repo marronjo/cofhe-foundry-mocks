@@ -6,33 +6,47 @@ import { anvilSetCode, TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTE
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 const deployMockTaskManager = async (hre: HardhatRuntimeEnvironment) => {
-	// Get Signer
 	const [signer] = await hre.ethers.getSigners()
 
 	console.log('Task Manager')
 
-	// Deploy TM Implementation
-	const tmFactory = await hre.ethers.getContractFactory('TaskManager')
-	const tmImplementation = await tmFactory.deploy()
-	await tmImplementation.waitForDeployment()
-	console.log('  - implementation deployed')
+	// Deploy MockTaskManager
+	const tmBytecode = await fs.readFile('./out/MockTaskManager.sol/TaskManager.json', 'utf8')
+	const tmJson = JSON.parse(tmBytecode)
+	await anvilSetCode(TASK_MANAGER_ADDRESS, tmJson.deployedBytecode.object)
+	const taskManager: TaskManager = await hre.ethers.getContractAt('TaskManager', TASK_MANAGER_ADDRESS)
+	console.log('  - deployed')
 
-	// Encode initialization data
-	const tmInitData = tmImplementation.interface.encodeFunctionData('initialize', [signer.address])
+	// Initialize MockTaskManager
+	const initTx = await taskManager.initialize(signer.address)
+	await initTx.wait()
+	console.log('  - initialized')
 
-	// Deploy ERC1967 Proxy to TASK_MANAGER_ADDRESS
-	const erc1967ProxyBytecode = await fs.readFile('./out/ERC1967Proxy.sol/ERC1967Proxy.json', 'utf8')
-	const erc1967ProxyJson = JSON.parse(erc1967ProxyBytecode)
-	const encodedConstructorArgs = hre.ethers.AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [await tmImplementation.getAddress(), tmInitData])
-	const proxyBytecode = hre.ethers.concat([erc1967ProxyJson.deployedBytecode.object, encodedConstructorArgs])
-	await anvilSetCode(TASK_MANAGER_ADDRESS, proxyBytecode)
+	// // Deploy TM Implementation
+	// const tmFactory = await hre.ethers.getContractFactory('TaskManager')
+	// const tmImplementation = await tmFactory.deploy()
+	// await tmImplementation.waitForDeployment()
+	// console.log('  - implementation deployed')
 
-	const TMProxy = tmFactory.attach(TASK_MANAGER_ADDRESS)
-	console.log('  - proxy deployed')
+	// // Encode initialization data
+	// const tmInitData = tmImplementation.interface.encodeFunctionData('initialize', [signer.address])
 
-	// Get TM instance at proxy address
-	const taskManager: TaskManager = await hre.ethers.getContractAt('TaskManager', await TMProxy.getAddress())
-	console.log('  - proxy attached')
+	// // Deploy ERC1967 Proxy to TASK_MANAGER_ADDRESS
+	// const erc1967ProxyBytecode = await fs.readFile('./out/ERC1967Proxy.sol/ERC1967Proxy.json', 'utf8')
+	// const erc1967ProxyJson = JSON.parse(erc1967ProxyBytecode)
+	// const encodedConstructorArgs = hre.ethers.AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [await tmImplementation.getAddress(), tmInitData])
+	// const proxyBytecode = hre.ethers.concat([erc1967ProxyJson.deployedBytecode.object, encodedConstructorArgs])
+	// await anvilSetCode(TASK_MANAGER_ADDRESS, proxyBytecode)
+
+	// const TMProxy = tmFactory.attach(TASK_MANAGER_ADDRESS)
+	// console.log('  - proxy deployed')
+
+	// // Get TM instance at proxy address
+	// const taskManager: TaskManager = await hre.ethers.getContractAt('TaskManager', await TMProxy.getAddress())
+	// console.log('  - proxy attached')
+
+	const tmExists = await taskManager.exists()
+	console.log('  - exists', tmExists ? 'yes' : 'no')
 
 	console.log('  - address:', await taskManager.getAddress())
 
@@ -126,6 +140,8 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 
 	const taskManager = await deployMockTaskManager(hre)
 	const acl = await deployMockACL(hre)
+
+	console.log('Task Manager Exists', await taskManager.getAddress(), await taskManager.exists())
 	await setTaskManagerACL(taskManager, acl)
 	const zkVerifier = await deployMockZkVerifier(hre)
 	const queryDecrypter = await deployMockQueryDecrypter(hre, acl)

@@ -177,13 +177,8 @@ library TMCommon {
     }
 }
 
-contract TaskManager is
-    ITaskManager,
-    Initializable,
-    UUPSUpgradeable,
-    Ownable2StepUpgradeable,
-    MockCoFHE
-{
+contract TaskManager is ITaskManager, MockCoFHE {
+    address owner;
     bool private initialized;
 
     // NOTE: MOCK PLAINTEXTS STORAGE
@@ -192,19 +187,21 @@ contract TaskManager is
     mapping(uint256 ctHash => uint64) private _decryptResultReadyTimestamp;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
-        _disableInitializers();
-    }
+    constructor() {}
 
     /**
      * @notice              Initializes the contract.
      * @param initialOwner  Initial owner address.
      */
-    function initialize(address initialOwner) public initializer {
-        __Ownable_init(initialOwner);
-        __UUPSUpgradeable_init();
+    function initialize(address initialOwner) public {
+        owner = initialOwner;
         initialized = true;
         verifierSigner = address(0);
+    }
+
+    modifier onlyOwner() {
+        if (msg.sender != owner) revert OnlyOwnerAllowed(msg.sender);
+        _;
     }
 
     function setSecurityZones(int32 minSZ, int32 maxSZ) external onlyOwner {
@@ -215,10 +212,6 @@ contract TaskManager is
     function isInitialized() public view returns (bool) {
         return initialized;
     }
-
-    function _authorizeUpgrade(
-        address newImplementation
-    ) internal override onlyOwner {}
 
     // Errors
     // Returned when the handle is not allowed in the ACL for the account.
