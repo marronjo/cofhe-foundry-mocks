@@ -22,7 +22,7 @@ contract CoFheTest is Test {
     ACL public acl;
     MockQueryDecrypter public queryDecrypter;
 
-    address public ACL_ADDRESS = 0x76d57191A9769A88a041FeeADc53AaE6EB663B83;
+    address public ACL_ADDRESS = 0x36C02dA8a0983159322a80FFE9F24b1acfF8B570;
 
     bool private _log;
 
@@ -37,7 +37,8 @@ contract CoFheTest is Test {
 
     function etchFhenixMocks() internal {
         // Override chain id (uncomment to enable)
-        vm.chainId(421614);
+        // vm.chainId(421614);
+        vm.chainId(31337);
 
         // TASK MANAGER
 
@@ -544,10 +545,10 @@ contract CoFheTest is Test {
         // verifyingContract = 0x2F3f56a2Aca7F0c3E2064AdB62f73dBD6B834bF7;
         // chainId = 420105;
 
-        // console.log("Domain Name: ", name);
-        // console.log("Domain Version: ", version);
-        // console.log("Domain ChainId: ", chainId);
-        // console.log("Domain Verifying Contract: ", verifyingContract);
+        console.log("Domain Name: ", name);
+        console.log("Domain Version: ", version);
+        console.log("Domain ChainId: ", chainId);
+        console.log("Domain Verifying Contract: ", verifyingContract);
 
         // console.log("verifyingContract: ", verifyingContract);
 

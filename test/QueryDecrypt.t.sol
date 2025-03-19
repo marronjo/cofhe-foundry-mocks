@@ -135,6 +135,42 @@ contract QueryDecryptTest is Test {
         console.log("Is Allowed", isAllowed);
     }
 
+    function test_cofhejs_permission() public {
+        // domain {
+        //     name: 'ACL',
+        //     version: '1',
+        //     chainId: 31337n,
+        //     verifyingContract: '0x36C02dA8a0983159322a80FFE9F24b1acfF8B570'
+        // }
+        // Permission {
+        //     issuer: '0xB4E1decAd11798C446BcBed8C25b2f2923Fc1AC8',
+        //     expiration: 1000000000000,
+        //     recipient: '0x0000000000000000000000000000000000000000',
+        //     validatorId: 0,
+        //     validatorContract: '0x0000000000000000000000000000000000000000',
+        //     issuerSignature: '0x27b576166d6bb4418cd2fdc7aeb3e9276189137c6f9b21495ea7f60e9f6ec5dc3ef3370bba34a36d4e32505d8eb46d5cb8a504756669e74925616e6971f191721c',
+        //     recipientSignature: '0x',
+        //     sealingKey: '0xf865839bb18600356eeb15aabb99ee115ad46d5d45d41e0ab1c662ee57715b13'
+        // }
+        Permission memory permission = Permission({
+            issuer: 0xB4E1decAd11798C446BcBed8C25b2f2923Fc1AC8,
+            expiration: 1000000000000,
+            recipient: 0x0000000000000000000000000000000000000000,
+            validatorId: 0,
+            validatorContract: 0x0000000000000000000000000000000000000000,
+            issuerSignature: hex"27b576166d6bb4418cd2fdc7aeb3e9276189137c6f9b21495ea7f60e9f6ec5dc3ef3370bba34a36d4e32505d8eb46d5cb8a504756669e74925616e6971f191721c",
+            recipientSignature: hex"",
+            sealingKey: 0xf865839bb18600356eeb15aabb99ee115ad46d5d45d41e0ab1c662ee57715b13
+        });
+
+        euint32 amount = FHE.asEuint32(100);
+        bool isAllowed2 = CFT.acl().isAllowedWithPermission(
+            permission,
+            euint32.unwrap(amount)
+        );
+        console.log("Is Allowed 2", isAllowed2);
+    }
+
     // function test_permission() public {
     //     Permission memory permission2 = Permission({
     //         issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,

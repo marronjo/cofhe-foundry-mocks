@@ -2,7 +2,6 @@
 /* solhint-disable one-contract-per-file */
 pragma solidity >=0.8.25 <0.9.0;
 
-import {console} from "forge-std/console.sol";
 import {ACL, Permission} from "./ACL.sol";
 // import {PlaintextsStorage} from "./PlaintextsStorage.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";

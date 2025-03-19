@@ -66,14 +66,13 @@ contract MockZkVerifier {
         uint8 utype,
         uint8 securityZone,
         uint256 input
-    ) internal returns (uint256) {
+    ) internal view returns (uint256) {
         bytes memory combined = bytes.concat(uint256ToBytes32(input));
         combined = bytes.concat(
             combined,
             uint256ToBytes32(uint256(uint160(user)))
         );
         combined = bytes.concat(combined, keccak256(abi.encodePacked(salt)));
-        salt += 1;
 
         // Calculate Keccak256 hash
         bytes32 ctHash = keccak256(combined);
@@ -82,6 +81,54 @@ contract MockZkVerifier {
     }
 
     // CORE
+
+    function zkVerifyCalcCtHashesPacked(
+        uint256[] memory values,
+        uint8[] memory utypes,
+        address user,
+        uint8 securityZone,
+        uint256 chainId
+    ) public view returns (uint256[] memory ctHashes) {
+        if (utypes.length != values.length) {
+            revert InvalidInputs();
+        }
+
+        ctHashes = new uint256[](utypes.length);
+
+        for (uint256 i = 0; i < utypes.length; i++) {
+            ctHashes[i] = zkVerifyCalcCtHash(
+                values[i],
+                utypes[i],
+                user,
+                securityZone,
+                chainId
+            );
+        }
+    }
+
+    function zkVerifyCalcCtHash(
+        uint256 value,
+        uint8 utype,
+        address user,
+        uint8 securityZone,
+        uint256
+    ) public view returns (uint256 ctHash) {
+        ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
+    }
+
+    function insertPackedCtHashes(
+        uint256[] memory ctHashes,
+        uint256[] memory values
+    ) public {
+        for (uint256 i = 0; i < ctHashes.length; i++) {
+            insertCtHash(ctHashes[i], values[i]);
+        }
+    }
+
+    function insertCtHash(uint256 ctHash, uint256 value) public {
+        TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);
+        salt += 1;
+    }
 
     function zkVerifyPacked(
         uint256[] memory values,
@@ -115,7 +162,7 @@ contract MockZkVerifier {
         uint256
     ) public returns (EncryptedInput memory) {
         uint256 ctHash = _calcPlaceholderKey(user, utype, securityZone, value);
-        TaskManager(TASK_MANAGER_ADDRESS).MOCK_setInEuintKey(ctHash, value);
+        insertCtHash(ctHash, value);
         return
             EncryptedInput({
                 ctHash: ctHash,

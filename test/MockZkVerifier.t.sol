@@ -61,4 +61,30 @@ contract MockZkVerifierTests is Test {
         CFT.taskManager().verifyInput(inputs[0], sender);
         CFT.taskManager().verifyInput(inputs[1], sender);
     }
+
+    function test_zkVerifier_as_mock() public {
+        address sender = address(128);
+
+        uint8[] memory utypes = new uint8[](2);
+        utypes[0] = Utils.EUINT8_TFHE;
+        utypes[1] = Utils.EUINT8_TFHE;
+
+        uint256[] memory values = new uint256[](2);
+        values[0] = 5;
+        values[1] = 6;
+
+        uint256[] memory ctHashes = CFT.zkVerifier().zkVerifyCalcCtHashesPacked(
+            values,
+            utypes,
+            sender,
+            0,
+            block.chainid
+        );
+
+        CFT.zkVerifier().insertPackedCtHashes(ctHashes, values);
+
+        // Hash should be in storage
+        CFT.assertHashValue(ctHashes[0], 5);
+        CFT.assertHashValue(ctHashes[1], 6);
+    }
 }
