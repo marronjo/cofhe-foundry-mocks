@@ -632,7 +632,7 @@ contract CoFheTest is Test {
         uint256 ctHash,
         uint256 hostChainId,
         Permission memory permission
-    ) public view returns (bool, uint256) {
+    ) public view returns (bool, string memory error, uint256) {
         return queryDecrypter.queryDecrypt(ctHash, hostChainId, permission);
     }
 
@@ -640,7 +640,7 @@ contract CoFheTest is Test {
         uint256 ctHash,
         uint256 hostChainId,
         Permission memory permission
-    ) public view returns (bool, bytes32) {
+    ) public view returns (bool, string memory error, bytes32) {
         return queryDecrypter.querySealOutput(ctHash, hostChainId, permission);
     }
 

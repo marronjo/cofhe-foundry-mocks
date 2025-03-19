@@ -1312,8 +1312,8 @@
       ]
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/CoFheTest.sol": {
-      "lastModificationDate": 1742388980731,
-      "contentHash": "d3c0e39e9ac0c09bcb9f4e3ec60211a9",
+      "lastModificationDate": 1742392095700,
+      "contentHash": "47d301b8acaad72b7dfe7f4037e369ae",
       "sourceName": "src/CoFheTest.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1437,8 +1437,8 @@
       "artifacts": []
     },
     "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/MockQueryDecrypter.sol": {
-      "lastModificationDate": 1742390261194,
-      "contentHash": "2d35d46d0bf46338644c148e34326c24",
+      "lastModificationDate": 1742392848926,
+      "contentHash": "d2587757fc170d20ae163426eb7695c5",
       "sourceName": "src/MockQueryDecrypter.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1468,7 +1468,8 @@
         "./Permissioned.sol",
         "./ACL.sol",
         "./MockTaskManager.sol",
-        "@fhenixprotocol/cofhe-contracts/FHE.sol"
+        "@fhenixprotocol/cofhe-contracts/FHE.sol",
+        "./Permissioned.sol"
       ],
       "versionPragmas": [
         ">=0.8.19 <0.9.0"
@@ -2244,6 +2245,44 @@
       "artifacts": [
         "ITaskManager",
         "Utils"
+      ]
+    },
+    "/Users/roguerotkosky/Fhenix/Development/cofhe-foundry-mocks/src/Example.sol": {
+      "lastModificationDate": 1742395343933,
+      "contentHash": "ac2a329ca37fced327b965962278a85b",
+      "sourceName": "src/Example.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@fhenixprotocol/cofhe-contracts/FHE.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.13"
+      ],
+      "artifacts": [
+        "Example"
       ]
     }
   }

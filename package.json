@@ -8,8 +8,8 @@
 	},
 	"scripts": {
 		"test": "forge test -vvv",
-		"anvil": "anvil",
-		"anvil-with-mocks": "anvil & npx hardhat deploy-mocks-on-anvil --network anvil",
+		"anvil": "anvil --code-size-limit 100000",
+		"anvil-with-mocks": "anvil --code-size-limit 100000 & npx hardhat deploy-mocks-on-anvil --network anvil",
 		"deploy-mocks": "npx hardhat deploy-mocks-on-anvil --network anvil",
 		"check-mocks": "npx hardhat check-mocks-on-anvil --network anvil"
 	},

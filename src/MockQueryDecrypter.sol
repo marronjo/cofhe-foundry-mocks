@@ -7,6 +7,7 @@ import {Permission} from "./Permissioned.sol";
 import {ACL} from "./ACL.sol";
 import {TaskManager} from "./MockTaskManager.sol";
 import {TASK_MANAGER_ADDRESS} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
+import {PermissionedUpgradeable} from "./Permissioned.sol";
 
 contract MockQueryDecrypter {
     TaskManager public taskManager;
@@ -33,13 +34,27 @@ contract MockQueryDecrypter {
         uint256 ctHash,
         uint256,
         Permission memory permission
-    ) public view returns (bool allowed, uint256) {
+    ) public view returns (bool allowed, string memory error, uint256) {
         if (permission.sealingKey != bytes32(0)) revert SealingKeyInvalid();
 
-        bool isAllowed = acl.isAllowedWithPermission(permission, ctHash);
-        if (!isAllowed) return (false, 0);
+        bool isAllowed;
+        try acl.isAllowedWithPermission(permission, ctHash) returns (
+            bool _isAllowed
+        ) {
+            isAllowed = _isAllowed;
+        } catch Error(string memory reason) {
+            // Handle string error messages
+            return (false, reason, 0);
+        } catch Panic(uint /*errorCode*/) {
+            // Handle panic errors
+            return (false, "Panic", 0);
+        } catch (bytes memory lowLevelData) {
+            return (false, decodeLowLevelReversion(lowLevelData), 0);
+        }
 
-        return (true, taskManager.mockStorage(ctHash));
+        if (!isAllowed) return (false, "NotAllowed", 0);
+
+        return (true, "", taskManager.mockStorage(ctHash));
     }
 
     function seal(uint256 input, bytes32 key) public pure returns (bytes32) {
@@ -50,17 +65,91 @@ contract MockQueryDecrypter {
         return uint256(hashed ^ key);
     }
 
+    function testQueryDecrypt(
+        uint256 ctHash,
+        uint256,
+        address issuer
+    ) public view returns (bool allowed, string memory error, uint256) {
+        bool isAllowed;
+        try acl.isAllowed(ctHash, issuer) returns (bool _isAllowed) {
+            isAllowed = _isAllowed;
+        } catch Error(string memory reason) {
+            // Handle string error messages
+            return (false, reason, 0);
+        } catch Panic(uint /*errorCode*/) {
+            // Handle panic errors
+            return (false, "Panic", 0);
+        } catch (bytes memory lowLevelData) {
+            return (false, decodeLowLevelReversion(lowLevelData), 0);
+        }
+
+        if (!isAllowed) return (false, "NotAllowed", 0);
+
+        uint256 value = taskManager.mockStorage(ctHash);
+        return (true, "", value);
+    }
+
     function querySealOutput(
         uint256 ctHash,
         uint256,
         Permission memory permission
-    ) public view returns (bool allowed, bytes32) {
+    ) public view returns (bool allowed, string memory error, bytes32) {
         if (permission.sealingKey == bytes32(0)) revert SealingKeyMissing();
 
-        bool isAllowed = acl.isAllowedWithPermission(permission, ctHash);
-        if (!isAllowed) return (false, bytes32(0));
+        bool isAllowed;
+        try acl.isAllowedWithPermission(permission, ctHash) returns (
+            bool _isAllowed
+        ) {
+            isAllowed = _isAllowed;
+        } catch Error(string memory reason) {
+            // Handle string error messages
+            return (false, reason, bytes32(0));
+        } catch Panic(uint /*errorCode*/) {
+            // Handle panic errors
+            return (false, "Panic", bytes32(0));
+        } catch (bytes memory lowLevelData) {
+            return (false, decodeLowLevelReversion(lowLevelData), bytes32(0));
+        }
+
+        if (!isAllowed) return (false, "NotAllowed", bytes32(0));
 
         uint256 value = taskManager.mockStorage(ctHash);
-        return (true, seal(value, permission.sealingKey));
+        return (true, "", seal(value, permission.sealingKey));
+    }
+
+    // UTIL
+
+    function decodeLowLevelReversion(
+        bytes memory data
+    ) public pure returns (string memory error) {
+        bytes4 selector = bytes4(data);
+        if (
+            selector ==
+            PermissionedUpgradeable.PermissionInvalid_Expired.selector
+        ) {
+            return "PermissionInvalid_Expired";
+        }
+        if (
+            selector ==
+            PermissionedUpgradeable.PermissionInvalid_IssuerSignature.selector
+        ) {
+            return "PermissionInvalid_IssuerSignature";
+        }
+        if (
+            selector ==
+            PermissionedUpgradeable
+                .PermissionInvalid_RecipientSignature
+                .selector
+        ) {
+            return "PermissionInvalid_RecipientSignature";
+        }
+        if (
+            selector ==
+            PermissionedUpgradeable.PermissionInvalid_Disabled.selector
+        ) {
+            return "PermissionInvalid_Disabled";
+        }
+        // Handle other errors
+        return "Low Level Error";
     }
 }

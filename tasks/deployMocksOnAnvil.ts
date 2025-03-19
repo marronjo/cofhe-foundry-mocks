@@ -2,7 +2,7 @@ import { task } from 'hardhat/config'
 import { MockZkVerifier, MockQueryDecrypter, TaskManager, ACL } from '../typechain-types'
 import { execSync } from 'child_process'
 import fs from 'fs/promises'
-import { anvilSetCode, TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS } from './utils'
+import { anvilSetCode, TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS, EXAMPLE_FHE_COUNTER_ADDRESS } from './utils'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 const deployMockTaskManager = async (hre: HardhatRuntimeEnvironment) => {
@@ -120,6 +120,20 @@ const deployMockQueryDecrypter = async (hre: HardhatRuntimeEnvironment, acl: ACL
 	return queryDecrypter
 }
 
+const deployExampleFHECounter = async (hre: HardhatRuntimeEnvironment) => {
+	console.log('ExampleFHECounter')
+
+	const exampleBytecode = await fs.readFile('./out/Example.sol/Example.json', 'utf8')
+	const exampleJson = JSON.parse(exampleBytecode)
+	await anvilSetCode(EXAMPLE_FHE_COUNTER_ADDRESS, exampleJson.deployedBytecode.object)
+	const example: Example = await hre.ethers.getContractAt('Example', EXAMPLE_FHE_COUNTER_ADDRESS)
+	console.log('  - deployed')
+
+	console.log('  - address:', await example.getAddress())
+
+	return example
+}
+
 const setTaskManagerACL = async (taskManager: TaskManager, acl: ACL) => {
 	const setAclTx = await taskManager.setACLContract(await acl.getAddress())
 	await setAclTx.wait()
@@ -145,6 +159,8 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 	await setTaskManagerACL(taskManager, acl)
 	const zkVerifier = await deployMockZkVerifier(hre)
 	const queryDecrypter = await deployMockQueryDecrypter(hre, acl)
+
+	const example = await deployExampleFHECounter(hre)
 
 	console.log('Done!')
 })

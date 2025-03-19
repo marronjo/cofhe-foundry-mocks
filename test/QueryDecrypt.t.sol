@@ -61,13 +61,11 @@ contract QueryDecryptTest is Test {
         Permission memory permission = CFT.createPermissionSelf(bob);
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        (bool allowed, uint256 decrypted) = CFT.queryDecrypt(
-            euint32.unwrap(result),
-            block.chainid,
-            permission
-        );
+        (bool allowed, string memory error, uint256 decrypted) = CFT
+            .queryDecrypt(euint32.unwrap(result), block.chainid, permission);
         assertEq(decrypted, 100);
         assertEq(allowed, true);
+        assertEq(error, "");
     }
 
     function test_getBalance_queryDecrypt_shared() public {
@@ -82,13 +80,11 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionShared(permission, bobPKey);
         permission = CFT.signPermissionRecipient(permission, alicePKey);
 
-        (bool allowed, uint256 decrypted) = CFT.queryDecrypt(
-            euint32.unwrap(result),
-            block.chainid,
-            permission
-        );
+        (bool allowed, string memory error, uint256 decrypted) = CFT
+            .queryDecrypt(euint32.unwrap(result), block.chainid, permission);
         assertEq(decrypted, 100);
         assertEq(allowed, true);
+        assertEq(error, "");
     }
 
     function test_getBalance_querySealOutput() public {
@@ -104,16 +100,59 @@ contract QueryDecryptTest is Test {
         permission.sealingKey = sealingKey;
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        (bool allowed, bytes32 sealedOutput) = CFT.querySealOutput(
+        (bool allowed, string memory error, bytes32 sealedOutput) = CFT
+            .querySealOutput(euint32.unwrap(result), block.chainid, permission);
+
+        assertEq(allowed, true);
+        assertEq(error, "");
+        uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);
+        assertEq(unsealed, 100);
+    }
+
+    function test_getBalance_querySealOutput_reversions() public {
+        InEuint32 memory inAmount = CFT.createInEuint32(100, bob);
+
+        vm.prank(bob);
+        example.setBalance(inAmount);
+
+        euint32 result = example.getBalance(bob);
+
+        // IssuerSignature
+
+        Permission memory permission = CFT.createPermissionSelf(bob);
+        bytes32 sealingKey = CFT.createSealingKey(bobPKey);
+        permission.sealingKey = sealingKey;
+        permission = CFT.signPermissionSelf(permission, bobPKey);
+        permission.expiration = 10000;
+
+        (bool allowed, string memory error, ) = CFT.querySealOutput(
             euint32.unwrap(result),
             block.chainid,
             permission
         );
 
-        assertEq(allowed, true);
+        assertEq(allowed, false);
+        assertEq(error, "PermissionInvalid_IssuerSignature");
 
-        uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);
-        assertEq(unsealed, 100);
+        // Expired
+
+        permission = CFT.createPermissionSelf(bob);
+        sealingKey = CFT.createSealingKey(bobPKey);
+        permission.sealingKey = sealingKey;
+        permission.expiration = uint64(block.timestamp - 1);
+        permission = CFT.signPermissionSelf(permission, bobPKey);
+
+        (allowed, error, ) = CFT.querySealOutput(
+            euint32.unwrap(result),
+            block.chainid,
+            permission
+        );
+
+        assertEq(allowed, false);
+        assertEq(error, "PermissionInvalid_Expired");
+
+        // TODO: RecipientSignature
+        // TODO: Disabled
     }
 
     function test_permission() public {
