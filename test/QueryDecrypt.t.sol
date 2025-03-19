@@ -43,7 +43,7 @@ contract QueryDecryptTest is Test {
 
         example = new QueryDecryptExample();
 
-        bobPKey = 0xB0B;
+        bobPKey = 0x5a7ebaa3bf002d8b7953167711e527cc352a73414be2af06149b2c39c7edb323;
         bob = vm.addr(bobPKey);
 
         alicePKey = 0xA11CE;
@@ -61,12 +61,13 @@ contract QueryDecryptTest is Test {
         Permission memory permission = CFT.createPermissionSelf(bob);
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        uint256 decrypted = CFT.queryDecrypt(
+        (bool allowed, uint256 decrypted) = CFT.queryDecrypt(
             euint32.unwrap(result),
             block.chainid,
             permission
         );
         assertEq(decrypted, 100);
+        assertEq(allowed, true);
     }
 
     function test_getBalance_queryDecrypt_shared() public {
@@ -81,12 +82,13 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionShared(permission, bobPKey);
         permission = CFT.signPermissionRecipient(permission, alicePKey);
 
-        uint256 decrypted = CFT.queryDecrypt(
+        (bool allowed, uint256 decrypted) = CFT.queryDecrypt(
             euint32.unwrap(result),
             block.chainid,
             permission
         );
         assertEq(decrypted, 100);
+        assertEq(allowed, true);
     }
 
     function test_getBalance_querySealOutput() public {
@@ -102,11 +104,13 @@ contract QueryDecryptTest is Test {
         permission.sealingKey = sealingKey;
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        bytes32 sealedOutput = CFT.querySealOutput(
+        (bool allowed, bytes32 sealedOutput) = CFT.querySealOutput(
             euint32.unwrap(result),
             block.chainid,
             permission
         );
+
+        assertEq(allowed, true);
 
         uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);
         assertEq(unsealed, 100);
@@ -118,7 +122,8 @@ contract QueryDecryptTest is Test {
         permission.sealingKey = sealingKey;
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
-        CFT.acl().isAllowedWithPermission(permission, 0);
+        bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
+        console.log("Is Allowed", isAllowed);
 
         permission = Permission({
             issuer: 0x0376AAc07Ad725E01357B1725B5ceC61aE10473c,
@@ -131,7 +136,7 @@ contract QueryDecryptTest is Test {
             recipientSignature: hex""
         });
 
-        bool isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
+        isAllowed = CFT.acl().isAllowedWithPermission(permission, 0);
         console.log("Is Allowed", isAllowed);
     }
 

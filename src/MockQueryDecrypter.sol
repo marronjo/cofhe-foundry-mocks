@@ -33,13 +33,13 @@ contract MockQueryDecrypter {
         uint256 ctHash,
         uint256,
         Permission memory permission
-    ) public view returns (uint256) {
+    ) public view returns (bool allowed, uint256) {
         if (permission.sealingKey != bytes32(0)) revert SealingKeyInvalid();
 
         bool isAllowed = acl.isAllowedWithPermission(permission, ctHash);
-        if (!isAllowed) revert NotAllowed();
+        if (!isAllowed) return (false, 0);
 
-        return taskManager.mockStorage(ctHash);
+        return (true, taskManager.mockStorage(ctHash));
     }
 
     function seal(uint256 input, bytes32 key) public pure returns (bytes32) {
@@ -54,13 +54,13 @@ contract MockQueryDecrypter {
         uint256 ctHash,
         uint256,
         Permission memory permission
-    ) public view returns (bytes32) {
+    ) public view returns (bool allowed, bytes32) {
         if (permission.sealingKey == bytes32(0)) revert SealingKeyMissing();
 
         bool isAllowed = acl.isAllowedWithPermission(permission, ctHash);
-        if (!isAllowed) revert NotAllowed();
+        if (!isAllowed) return (false, bytes32(0));
 
         uint256 value = taskManager.mockStorage(ctHash);
-        return seal(value, permission.sealingKey);
+        return (true, seal(value, permission.sealingKey));
     }
 }
