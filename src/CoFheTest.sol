@@ -654,17 +654,19 @@ contract CoFheTest is Test {
     }
 
     function queryDecrypt(
-        Permission memory permission,
-        uint256 ctHash
+        uint256 ctHash,
+        uint256 hostChainId,
+        Permission memory permission
     ) public view returns (uint256) {
-        return queryDecrypter.queryDecrypt(permission, ctHash);
+        return queryDecrypter.queryDecrypt(ctHash, hostChainId, permission);
     }
 
     function querySealOutput(
-        Permission memory permission,
-        uint256 ctHash
+        uint256 ctHash,
+        uint256 hostChainId,
+        Permission memory permission
     ) public view returns (bytes32) {
-        return queryDecrypter.querySealOutput(permission, ctHash);
+        return queryDecrypter.querySealOutput(ctHash, hostChainId, permission);
     }
 
     function unseal(bytes32 hashed, bytes32 key) public view returns (uint256) {

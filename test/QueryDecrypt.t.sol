@@ -62,8 +62,9 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
         uint256 decrypted = CFT.queryDecrypt(
-            permission,
-            euint32.unwrap(result)
+            euint32.unwrap(result),
+            block.chainid,
+            permission
         );
         assertEq(decrypted, 100);
     }
@@ -81,8 +82,9 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionRecipient(permission, alicePKey);
 
         uint256 decrypted = CFT.queryDecrypt(
-            permission,
-            euint32.unwrap(result)
+            euint32.unwrap(result),
+            block.chainid,
+            permission
         );
         assertEq(decrypted, 100);
     }
@@ -101,8 +103,9 @@ contract QueryDecryptTest is Test {
         permission = CFT.signPermissionSelf(permission, bobPKey);
 
         bytes32 sealedOutput = CFT.querySealOutput(
-            permission,
-            euint32.unwrap(result)
+            euint32.unwrap(result),
+            block.chainid,
+            permission
         );
 
         uint256 unsealed = CFT.unseal(sealedOutput, sealingKey);

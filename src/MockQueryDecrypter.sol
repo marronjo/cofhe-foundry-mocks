@@ -12,6 +12,7 @@ contract MockQueryDecrypter {
     TaskManager public taskManager;
     ACL public acl;
 
+    error InvalidHostChainId();
     error SealingKeyMissing();
     error SealingKeyInvalid();
 
@@ -29,9 +30,11 @@ contract MockQueryDecrypter {
     // BODY
 
     function queryDecrypt(
-        Permission memory permission,
-        uint256 ctHash
+        uint256 ctHash,
+        uint256 hostChainId,
+        Permission memory permission
     ) public view returns (uint256) {
+        if (hostChainId != block.chainid) revert InvalidHostChainId();
         if (permission.sealingKey != bytes32(0)) revert SealingKeyInvalid();
 
         acl.isAllowedWithPermission(permission, ctHash);
@@ -47,9 +50,12 @@ contract MockQueryDecrypter {
     }
 
     function querySealOutput(
-        Permission memory permission,
-        uint256 ctHash
+        uint256 ctHash,
+        uint256 hostChainId,
+        Permission memory permission
     ) public view returns (bytes32) {
+        if (hostChainId != block.chainid) revert InvalidHostChainId();
+
         if (permission.sealingKey == bytes32(0)) revert SealingKeyMissing();
 
         acl.isAllowedWithPermission(permission, ctHash);
