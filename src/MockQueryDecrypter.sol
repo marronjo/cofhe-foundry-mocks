@@ -35,8 +35,6 @@ contract MockQueryDecrypter {
         uint256,
         Permission memory permission
     ) public view returns (bool allowed, string memory error, uint256) {
-        if (permission.sealingKey != bytes32(0)) revert SealingKeyInvalid();
-
         bool isAllowed;
         try acl.isAllowedWithPermission(permission, ctHash) returns (
             bool _isAllowed

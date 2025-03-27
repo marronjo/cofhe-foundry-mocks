@@ -1,5 +1,5 @@
 import { task } from 'hardhat/config'
-import { MockZkVerifier, MockQueryDecrypter, TaskManager, ACL } from '../typechain-types'
+import { MockZkVerifier, MockQueryDecrypter, TaskManager, ACL, Example } from '../typechain-types'
 import { execSync } from 'child_process'
 import fs from 'fs/promises'
 import { anvilSetCode, TASK_MANAGER_ADDRESS, ZK_VERIFIER_ADDRESS, QUERY_DECRYPTER_ADDRESS, EXAMPLE_FHE_COUNTER_ADDRESS } from './utils'
@@ -21,29 +21,6 @@ const deployMockTaskManager = async (hre: HardhatRuntimeEnvironment) => {
 	const initTx = await taskManager.initialize(signer.address)
 	await initTx.wait()
 	console.log('  - initialized')
-
-	// // Deploy TM Implementation
-	// const tmFactory = await hre.ethers.getContractFactory('TaskManager')
-	// const tmImplementation = await tmFactory.deploy()
-	// await tmImplementation.waitForDeployment()
-	// console.log('  - implementation deployed')
-
-	// // Encode initialization data
-	// const tmInitData = tmImplementation.interface.encodeFunctionData('initialize', [signer.address])
-
-	// // Deploy ERC1967 Proxy to TASK_MANAGER_ADDRESS
-	// const erc1967ProxyBytecode = await fs.readFile('./out/ERC1967Proxy.sol/ERC1967Proxy.json', 'utf8')
-	// const erc1967ProxyJson = JSON.parse(erc1967ProxyBytecode)
-	// const encodedConstructorArgs = hre.ethers.AbiCoder.defaultAbiCoder().encode(['address', 'bytes'], [await tmImplementation.getAddress(), tmInitData])
-	// const proxyBytecode = hre.ethers.concat([erc1967ProxyJson.deployedBytecode.object, encodedConstructorArgs])
-	// await anvilSetCode(TASK_MANAGER_ADDRESS, proxyBytecode)
-
-	// const TMProxy = tmFactory.attach(TASK_MANAGER_ADDRESS)
-	// console.log('  - proxy deployed')
-
-	// // Get TM instance at proxy address
-	// const taskManager: TaskManager = await hre.ethers.getContractAt('TaskManager', await TMProxy.getAddress())
-	// console.log('  - proxy attached')
 
 	const tmExists = await taskManager.exists()
 	console.log('  - exists', tmExists ? 'yes' : 'no')
@@ -161,6 +138,12 @@ task('deploy-mocks-on-anvil', 'Runs a script on the Anvil network').setAction(as
 	const queryDecrypter = await deployMockQueryDecrypter(hre, acl)
 
 	const example = await deployExampleFHECounter(hre)
+	const [sender, backup, bob] = await hre.ethers.getSigners()
+	console.log('Bob Address', await bob.getAddress())
+	await example.connect(bob).setNumberTrivial(10)
+
+	const numberHash = await example.numberHash()
+	console.log('Number Hash', numberHash)
 
 	console.log('Done!')
 })
