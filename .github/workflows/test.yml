@@ -22,6 +22,17 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Show pnpm version
+        run: |
+          pnpm --version
+      
+      - name: Install pnpm dependencies
+        run: |
+          pnpm install
 
       - name: Show Forge version
         run: |
