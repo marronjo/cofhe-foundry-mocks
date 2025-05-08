@@ -12,7 +12,6 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 import {Permission, PermissionUtils} from "./Permissioned.sol";
 import {MockQueryDecrypter} from "./MockQueryDecrypter.sol";
 import {QUERY_DECRYPTER_ADDRESS} from "./addresses/QueryDecrypterAddress.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {SIGNER_ADDRESS} from "./MockCoFHE.sol";
 
 contract CoFheTest is Test {
@@ -54,20 +53,12 @@ contract CoFheTest is Test {
         vm.stopPrank();
 
         // ACL
-
-        // Deploy implementation
-        ACL aclImplementation = new ACL();
-
-        // Deploy proxy with implementation
-        bytes memory initData = abi.encodeWithSelector(
-            ACL.initialize.selector,
-            TM_ADMIN
-        );
         deployCodeTo(
-            "ERC1967Proxy.sol:ERC1967Proxy",
-            abi.encode(address(aclImplementation), initData),
+            "ACL.sol:ACL",
+            abi.encode(TM_ADMIN),
             ACL_ADDRESS
         );
+
         acl = ACL(ACL_ADDRESS);
         vm.label(address(acl), "ACL");
 
