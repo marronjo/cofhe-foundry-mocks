@@ -3,11 +3,9 @@
 
 pragma solidity >=0.8.19 <0.9.0;
 
-import {Permission} from "./Permissioned.sol";
 import {ACL} from "./ACL.sol";
 import {TaskManager} from "./MockTaskManager.sol";
-import {TASK_MANAGER_ADDRESS} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
-import {PermissionedUpgradeable} from "./Permissioned.sol";
+import {Permission, MockPermissioned} from "./Permissioned.sol";
 
 contract MockQueryDecrypter {
     TaskManager public taskManager;
@@ -121,30 +119,22 @@ contract MockQueryDecrypter {
         bytes memory data
     ) public pure returns (string memory error) {
         bytes4 selector = bytes4(data);
-        if (
-            selector ==
-            PermissionedUpgradeable.PermissionInvalid_Expired.selector
-        ) {
+        if (selector == MockPermissioned.PermissionInvalid_Expired.selector) {
             return "PermissionInvalid_Expired";
         }
         if (
             selector ==
-            PermissionedUpgradeable.PermissionInvalid_IssuerSignature.selector
+            MockPermissioned.PermissionInvalid_IssuerSignature.selector
         ) {
             return "PermissionInvalid_IssuerSignature";
         }
         if (
             selector ==
-            PermissionedUpgradeable
-                .PermissionInvalid_RecipientSignature
-                .selector
+            MockPermissioned.PermissionInvalid_RecipientSignature.selector
         ) {
             return "PermissionInvalid_RecipientSignature";
         }
-        if (
-            selector ==
-            PermissionedUpgradeable.PermissionInvalid_Disabled.selector
-        ) {
+        if (selector == MockPermissioned.PermissionInvalid_Disabled.selector) {
             return "PermissionInvalid_Disabled";
         }
         // Handle other errors

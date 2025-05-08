@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {ExampleFHECounter} from "./ExampleFHECounter.sol";
 import {CoFheTest} from "../src/CoFheTest.sol";
 import "@fhenixprotocol/cofhe-contracts/FHE.sol";
-import {PermissionedUpgradeable, Permission, PermissionUtils} from "../src/Permissioned.sol";
+import {Permission, PermissionUtils} from "../src/Permissioned.sol";
 
 interface IIsAllowedWithPermission {
     function isAllowedWithPermission(

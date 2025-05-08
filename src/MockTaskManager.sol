@@ -117,13 +117,17 @@ library TMCommon {
         // Calculate Keccak256 hash
         bytes32 hash = keccak256(combined);
 
-        return
-            appendMetadata(
-                uint256(hash),
-                securityZone,
-                getReturnType(functionId, ctType),
-                isTriviallyEncrypted
-            );
+        // TODO: Trivially encrypted here isn't matching the check in `checkAllowed`
+        // - arcitect 2025-04-02
+
+        uint256 ctHash = appendMetadata(
+            uint256(hash),
+            securityZone,
+            getReturnType(functionId, ctType),
+            isTriviallyEncrypted
+        );
+
+        return ctHash;
     }
 
     function getByteForTrivialAndType(
@@ -264,7 +268,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         _;
     }
 
-    function exists() public view returns (bool) {
+    function exists() public pure returns (bool) {
         return true;
     }
 
@@ -303,7 +307,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
         }
     }
 
-    function createDecryptTask(uint256 ctHash, address requestor) public {
+    function createDecryptTask(uint256 ctHash, address /*requestor*/) public {
         checkAllowed(ctHash);
 
         // NOTE: MOCK COMMENTED
@@ -575,7 +579,7 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function handleDecryptResult(
         uint256 ctHash,
         uint256 result,
-        address[] calldata requestors
+        address[] calldata /*requestors*/
     ) external onlyAggregator {
         // plaintextsStorage.storeResult(ctHash, result);
         // for (uint8 i = 0; i < requestors.length; i++) {
@@ -638,18 +642,31 @@ contract TaskManager is ITaskManager, MockCoFHE {
     function allow(uint256 ctHash, address account) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
             acl.allow(ctHash, account, msg.sender);
+
+            // NOTE: MOCK
+            MOCK_logAllow(
+                account == msg.sender ? "FHE.allowThis" : "FHE.allow",
+                ctHash,
+                account
+            );
         }
     }
 
     function allowGlobal(uint256 ctHash) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
             acl.allowGlobal(ctHash, msg.sender);
+
+            // NOTE: MOCK
+            MOCK_logAllow("FHE.allowGlobal", ctHash, msg.sender);
         }
     }
 
     function allowTransient(uint256 ctHash, address account) external {
         if (!TMCommon.isTriviallyEncryptedFromHash(ctHash)) {
             acl.allowTransient(ctHash, account, msg.sender);
+
+            // NOTE: MOCK
+            MOCK_logAllow("FHE.allowTransient", ctHash, account);
         }
     }
 
@@ -658,6 +675,9 @@ contract TaskManager is ITaskManager, MockCoFHE {
             uint256[] memory hashes = new uint256[](1);
             hashes[0] = ctHash;
             acl.allowForDecryption(hashes, msg.sender);
+
+            // NOTE: MOCK
+            MOCK_logAllow("FHE.allowForDecryption", ctHash, msg.sender);
         }
     }
 

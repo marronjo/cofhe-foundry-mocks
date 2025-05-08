@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
+// solhint-disable-next-line transient-storage
 pragma solidity >=0.8.25 <0.9.0;
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import {taskManagerAddress} from "./addresses/TaskManagerAddress.sol";
-import {PermissionedUpgradeable, Permission} from "./Permissioned.sol";
+import {Ownable2Step, Ownable} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {MockPermissioned, Permission} from "./Permissioned.sol";
+import {TASK_MANAGER_ADDRESS} from "@fhenixprotocol/cofhe-contracts/FHE.sol";
 
 /**
  * @title  ACL
@@ -14,11 +14,7 @@ import {PermissionedUpgradeable, Permission} from "./Permissioned.sol";
  *         By defining and enforcing these permissions, the ACL ensures that encrypted data remains secure while still being usable
  *         within authorized contexts.
  */
-contract ACL is
-    UUPSUpgradeable,
-    Ownable2StepUpgradeable,
-    PermissionedUpgradeable
-{
+contract ACL is Ownable2Step, MockPermissioned {
     /// @notice Returned if the delegatee contract is already delegatee for sender & delegator addresses.
     error AlreadyDelegated();
 
@@ -68,7 +64,7 @@ contract ACL is
     uint256 private constant PATCH_VERSION = 0;
 
     /// @notice TaskManagerAddress address.
-    address public constant TASK_MANAGER_ADDRESS = taskManagerAddress;
+    address public constant TASK_MANAGER_ADDRESS_ = TASK_MANAGER_ADDRESS;
 
     /// @dev keccak256(abi.encode(uint256(keccak256("cofhe.storage.ACL")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant ACL_SLOT =
@@ -76,17 +72,12 @@ contract ACL is
             ~bytes32(uint256(0xff));
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
-        _disableInitializers();
-    }
+    constructor(
+        address initialOwner
+    ) MockPermissioned() Ownable(initialOwner) {}
 
-    /**
-     * @notice              Initializes the contract.
-     * @param initialOwner  Initial owner address.
-     */
-    function initialize(address initialOwner) public initializer {
-        __Ownable_init(initialOwner);
-        __PermissionedUpgradeable_init();
+    function exists() public pure returns (bool) {
+        return true;
     }
 
     /**
@@ -101,7 +92,7 @@ contract ACL is
         address account,
         address requester
     ) public virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
 
@@ -120,7 +111,7 @@ contract ACL is
      * @param requester     Address of the account giving the permissions.
      */
     function allowGlobal(uint256 handle, address requester) public virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
 
@@ -141,7 +132,7 @@ contract ACL is
         uint256[] memory handlesList,
         address requester
     ) public virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
 
@@ -172,22 +163,25 @@ contract ACL is
         address account,
         address requester
     ) public virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
 
         if (
-            !isAllowed(handle, requester) && requester != TASK_MANAGER_ADDRESS
+            !isAllowed(handle, requester) && requester != TASK_MANAGER_ADDRESS_
         ) {
             revert SenderNotAllowed(requester);
         }
 
         bytes32 key = keccak256(abi.encodePacked(handle, account));
         assembly {
+            // solc-ignore-next-line transient-storage
             tstore(key, 1)
             let length := tload(0)
             let lengthPlusOne := add(length, 1)
+            // solc-ignore-next-line transient-storage
             tstore(lengthPlusOne, key)
+            // solc-ignore-next-line transient-storage
             tstore(0, lengthPlusOne)
         }
     }
@@ -202,7 +196,7 @@ contract ACL is
         address delegatee,
         address delegateeContract
     ) public virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
         if (delegateeContract == msg.sender) {
@@ -263,7 +257,7 @@ contract ACL is
      * @return taskManagerAddress  Address of the TaskManager.
      */
     function getTaskManagerAddress() public view virtual returns (address) {
-        return TASK_MANAGER_ADDRESS;
+        return TASK_MANAGER_ADDRESS_;
     }
 
     /**
@@ -324,7 +318,7 @@ contract ACL is
      *      Account Abstraction when bundling several UserOps calling the TaskManagerCoprocessor.
      */
     function cleanTransientStorage() external virtual {
-        if (msg.sender != TASK_MANAGER_ADDRESS) {
+        if (msg.sender != TASK_MANAGER_ADDRESS_) {
             revert DirectAllowForbidden(msg.sender);
         }
 
@@ -362,15 +356,6 @@ contract ACL is
                 )
             );
     }
-
-    /**
-     * @dev Should revert when `msg.sender` is not authorized to upgrade the contract.
-     *      Empty implementation since authorization is handled by onlyOwner modifier.
-     */
-    /* solhint-disable-next-line no-empty-blocks */
-    function _authorizeUpgrade(
-        address _newImplementation
-    ) internal virtual override onlyOwner {}
 
     /**
      * @dev                         Returns the ACL storage location.
